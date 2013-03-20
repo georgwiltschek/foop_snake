@@ -48,6 +48,7 @@ class Client
 		end
 	end
 
+	# draws all the snakes
 	def draw snakes
 		@screen.fill_rect 0, 0, 640, 480, @BGCOLOR
 
@@ -77,14 +78,19 @@ class Client
 		# main loop
 		while @running
 			d = (Time.now - t) * 1000
+
+			# this should be sent to the server
 			direction = handle_input
 			if direction != nil then
 				dir = direction
 			end
 
+			# tick
 			if (d > 100) then
 				t = Time.now
 				@log.info("tick")
+
+				# this should go on the server side
 				snakes.each do |snake|
 					# growth and stuff
 					snake.update(d, dir)
