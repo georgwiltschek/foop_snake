@@ -7,7 +7,28 @@ class Snake
 		@tail.push(self)
 	end
 
+	def opposite(d)
+		case d
+			when :left
+				return :right
+			when :right
+				return :left
+			when :up
+				return :down
+			when :down
+				return :up
+		end
+
+		return nil
+	end
+
 	def move direction
+		if opposite(@lastdirection) == direction then
+			direction = @lastdirection
+		end
+
+		@lastdirection = direction
+
 		# last segment set to position of first
 		@tail.last.set_y(@tail.first.get_y)
 		@tail.last.set_x(@tail.first.get_x)
