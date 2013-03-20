@@ -48,19 +48,28 @@ class Client
 		end
 	end
 
-	def draw snake
+	def draw snakes
 		@screen.fill_rect 0, 0, 640, 480, @BGCOLOR
 
-		snake.get_tail.each do |t|
-			@screen.fill_rect t.get_x*8 % @w, t.get_y*8 % @h, 8, 8,t.get_color
+		snakes.each do |snake|
+			snake.get_tail.each do |t|
+				@screen.fill_rect t.get_x*8 % @w, t.get_y*8 % @h, 8, 8,t.get_color
+			end
 		end
 
 		@screen.flip	
 	end
 
 	def run
+		snakes = Array.new
 
-		snake = Snake.new(8,8)
+		snake = Snake.new(8,8,123456)
+		snakes.push(snake)
+		
+		# just for fun
+		snake2 = Snake.new(40,40,98765)
+		snakes.push(snake2)
+	
 		@running = true
 		
 		t = Time.now
@@ -76,13 +85,15 @@ class Client
 			if (d > 100) then
 				t = Time.now
 				@log.info("tick")
-				# growth and stuff	
-				snake.update(d, dir)
-				# movement
-				snake.move(dir)
+				snakes.each do |snake|
+					# growth and stuff
+					snake.update(d, dir)
+					# movement
+					snake.move(dir)
+				end
 			end
 			
-			draw(snake)
+			draw(snakes)
 		end
 	end
 end

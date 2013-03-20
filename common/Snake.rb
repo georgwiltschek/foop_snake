@@ -1,8 +1,8 @@
 class Snake
-	def initialize x, y
+	def initialize x, y, color
 		@pos_x = x
 		@pos_y = y
-		@color = 123456
+		@color = color
 		@tail = Array.new
 		@tail.push(self)
 	end
@@ -36,16 +36,16 @@ class Snake
 		if @tail.length < 20 then
 			case direction
 				when :right
-					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y)
+					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color)
 
 				when :left
-					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y)
+					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color)
 
 				when :up
-					t = Snake.new(@tail.last.get_x,     @tail.last.get_y + 1)
+					t = Snake.new(@tail.last.get_x,     @tail.last.get_y + 1, @tail.last.get_color)
 
 				when :down
-					t= Snake.new(@tail.last.get_x, @tail.last.get_y - 1)
+					t= Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color)
 			end
 
 			if t != nil then
