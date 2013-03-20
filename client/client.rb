@@ -76,9 +76,9 @@ class Client
 			if (d > 100) then
 				t = Time.now
 				@log.info("tick")
-				
+				# growth and stuff	
 				snake.update(d, dir)
-
+				# movement
 				snake.move(dir)
 			end
 			

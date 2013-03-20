@@ -8,15 +8,17 @@ class Snake
 	end
 
 	def move direction
-
+		# last segment set to position of first
 		@tail.last.set_y(@tail.first.get_y)
 		@tail.last.set_x(@tail.first.get_x)
 		
+		# insert last segment as second segment
 		if @tail.length > 1 then
 			last = @tail.pop
 			@tail.insert(1, last)
 		end
 
+		# move first segment
 		case direction
 			when :right
 				@tail.first.set_x(@pos_x = @pos_x + 1)
@@ -30,8 +32,8 @@ class Snake
 	end
 
 	def update delta, direction
+		# let the snake grow for a while
 		if @tail.length < 20 then
-
 			case direction
 				when :right
 					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y)
