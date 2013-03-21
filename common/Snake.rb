@@ -1,35 +1,20 @@
 class Snake
+
+	# Constructor
 	def initialize x, y, color
+		@log = Logger.new(STDOUT)
 		@pos_x = x
 		@pos_y = y
 		@color = color
-		@tail = Array.new
+		@tail = Array.new			# the whole snake
 		@tail.push(self)
-		@log = Logger.new(STDOUT)
-		@grow = 10 # initial growth
+		@grow = 9 					# initial growth
 	end
 
-	def opposite d
-		case d
-
-			when :left
-				return :right
-
-			when :right
-				return :left
-
-			when :up
-				return :down
-
-			when :down
-				return :up
-
-		end
-
-		return nil
-	end
-
+	# move and detect collisions
 	def move direction, snakes
+
+		# no straight backwards
 		if opposite(@lastdirection) == direction then
 			direction = @lastdirection
 		end
@@ -38,10 +23,11 @@ class Snake
 		next_x = @pos_x
 		next_y = @pos_y
 
+		# calculate next position
 		case direction
-
 			when :right
 				next_x = @pos_x + 1
+
 			when :left
 				next_x = @pos_x - 1
 
@@ -50,7 +36,6 @@ class Snake
 
 			when :up
 				next_y = @pos_y - 1
-
 		end
 
 		# collision detection
@@ -92,12 +77,16 @@ class Snake
 		@tail.first.set_y(next_y)
 	end
 
+	# remove all segments starting with segment, return numer of 
+	# removed segments
 	def remove_from_segment segment
 		total = @tail.length
 		@tail.slice!(@tail.index(segment), @tail.length)
 		return total - @tail.length
 	end
 
+	# update snake (i.e. stuff, that's not really movement, but also important.
+	# at the moment it does growth only)
 	def update delta, direction
 		# let the snake grow for a while
 
@@ -130,6 +119,33 @@ class Snake
 			end
 		end
 	end
+
+	# get the opposite direction of d
+	def opposite d
+		case d
+
+			when :left
+				return :right
+
+			when :right
+				return :left
+
+			when :up
+				return :down
+
+			when :down
+				return :up
+
+		end
+
+		return nil
+	end
+
+	####################################################
+	##
+	## Getter/Setter
+	##
+	####################################################
 
 	def get_tail
 		return @tail
