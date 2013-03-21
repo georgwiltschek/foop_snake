@@ -54,14 +54,17 @@ class Snake
 
 		# collision detection
 		snakes.each do |snake|
-			if snake == self
-				# next
-			end
+
 			snake.get_tail.each do |segment|
 				if next_x == segment.get_x &&
 				   next_y == segment.get_y then
 
-					@log.info 'collision detected'
+	   				if snake == self
+						@log.info 'collision with self detected'
+					else
+						@log.info 'collision detected'
+					end
+
 					return
 
 				end
