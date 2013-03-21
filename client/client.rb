@@ -73,13 +73,15 @@ class Client
 	def run
 		snakes = Array.new
 
-		player = Snake.new(8, 8, 123456, "Clyde")
+		mode = :snake # or :tron
+
+		player = Snake.new(8, 8, 123456, "Clyde", mode)
 		snakes.push(player)
 		
 		# just for fun
-		snakes.push(Snake.new(40, 40, 98765, "Pinky"))
-		snakes.push(Snake.new(15, 15, 8000000, "Blinky"))
-		snakes.push(Snake.new(60, 15, 4324324, "Inky"))
+		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode))
+		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode))
+		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode))
 	
 		@running = true
 		
