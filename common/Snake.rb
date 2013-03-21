@@ -8,11 +8,12 @@ class Snake
 		@pos_x = x
 		@pos_y = y
 		@color = color
-		@name = name
+		@name  = name
 
 		# initial growth
-		@grow = 9
+		@grow  = 9
 
+		# add self as first segment of the snake
 		@tail.push(self)
 	end
 
