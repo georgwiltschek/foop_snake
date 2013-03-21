@@ -132,6 +132,7 @@ class Client
 
 						end
 
+						# "AI" snakes
 						snake.update(d, rdir)
 						snake.move(rdir, snakes)
 					end
@@ -143,5 +144,6 @@ class Client
 	end
 end
 
+# create and run new client
 c = Client.new
 c.run
