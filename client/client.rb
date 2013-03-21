@@ -80,7 +80,6 @@ class Client
 		snakes.push(Snake.new(40, 40, 98765))
 		snakes.push(Snake.new(15, 15, 8000000))
 		snakes.push(Snake.new(60, 15, 4324324))
-		snakes.push(Snake.new(45, 60, 43234))
 	
 		@running = true
 		

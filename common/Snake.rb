@@ -6,6 +6,7 @@ class Snake
 		@tail = Array.new
 		@tail.push(self)
 		@log = Logger.new(STDOUT)
+		@grow = 10 # initial growth
 	end
 
 	def opposite d
@@ -57,14 +58,20 @@ class Snake
 
 			snake.get_tail.each do |segment|
 				if next_x == segment.get_x &&
-				   next_y == segment.get_y then
+				   next_y == segment.get_y &&
+				   snake.get_tail.index(segment) != 0 # head collision TODO
+				then
 
 	   				if snake == self
+	   					# collision with self, do nothing
 						@log.info 'collision with self detected'
 					else
+						# collision with other snake, eat & grow
 						@log.info 'collision detected'
+						@grow = snake.remove_from_segment(segment)
 					end
 
+					# one collision is enough, return
 					return
 
 				end
@@ -85,9 +92,22 @@ class Snake
 		@tail.first.set_y(next_y)
 	end
 
+	def remove_from_segment segment
+		total = @tail.length
+		@tail.slice!(@tail.index(segment), @tail.length)
+		return total - @tail.length
+	end
+
 	def update delta, direction
 		# let the snake grow for a while
-		if @tail.length < 20 then
+
+		if @tail.length == 0 then
+			#die
+			return
+		end
+
+		if @grow > 0 then
+			@grow = @grow - 1
 			case direction
 
 				when :right
