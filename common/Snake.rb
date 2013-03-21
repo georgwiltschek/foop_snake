@@ -1,22 +1,26 @@
 class Snake
 
 	# Constructor
-	def initialize x, y, color, name
+	def initialize x, y, color, name, mode = :snake
 		@log   = Logger.new(STDOUT)
 		@tail  = Array.new # the whole snake, despite the name :)
-
+		@mode = mode
 		@pos_x = x
 		@pos_y = y
 		@color = color
 		@name  = name
 
 		# initial growth
-		@grow  = 9
+		if mode == :snake then
+			@grow = 9
+		else
+			@grow = 0
+		end
 
 		# add self as first segment of the snake
 		@tail.push(self)
 	end
-
+	
 	# move and detect collisions
 	def move direction, snakes
 
@@ -59,7 +63,7 @@ class Snake
 					else
 						# collision with other snake, eat & grow
 						@log.info "#{self.get_name}: collision with #{segment.get_name} detected"
-						@grow = snake.remove_from_segment(segment)
+						@grow = @grow + snake.remove_from_segment(segment)
 					end
 
 					# one collision is enough, return
@@ -68,6 +72,9 @@ class Snake
 				end
 			end
 		end
+
+		# in tron mode, always grow 1
+		if @mode == :tron then @grow = 1 end
 
 		# last segment set to position of first
 		@tail.last.set_y(@tail.first.get_y)
@@ -86,6 +93,8 @@ class Snake
 	# remove all segments starting with segment, return numer of 
 	# removed segments
 	def remove_from_segment segment
+		if @mode == :tron then return 0 end
+
 		total = @tail.length
 		@tail.slice!(@tail.index(segment), @tail.length)
 		return total - @tail.length
