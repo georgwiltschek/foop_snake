@@ -59,6 +59,8 @@ class Client
 
 	# draws all the snakes
 	def draw snakes
+		# TODO maybe check the SDL documentation, since the game tends
+		# to stop redrawing after a while
 		@screen.fill_rect 0, 0, 640, 480, @BGCOLOR
 
 		snakes.each do |snake|
@@ -73,23 +75,22 @@ class Client
 	def run
 		snakes = Array.new
 
-		mode = :snake # or :tron
+		mode = :snake # or :tron :-)
 
 		player = Snake.new(8, 8, 123456, "Clyde", mode)
 		snakes.push(player)
 		
-		# just for fun
+		# just for fun and testing
 		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode))
 		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode))
 		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode))
 	
-		@running = true
-		
+		@running = true	
 		t = Time.now
 
 		# main loop
 		while @running
-			d = (Time.now - t) * 1000 
+			d = (Time.now - t) * 1000 # elapsed time since last tick
 
 			# this should be sent to the server
 			direction = handle_input
@@ -105,7 +106,7 @@ class Client
 				# receive game-related stuff from server TODO
 				# send directions to server TODO
 
-				# this should go on the server side
+				# this should go on the server side TODO
 				snakes.each do |snake|
 
 					if snake == player then
@@ -117,7 +118,7 @@ class Client
 						snake.move(dir, snakes)
 
 					else
-						# funstuff again, just for having something to watch
+						# "AI" snakes
 						case rand(4)
 
 							when 0
@@ -133,8 +134,7 @@ class Client
 								rdir = :down
 
 						end
-
-						# "AI" snakes
+						
 						snake.update(d, rdir)
 						snake.move(rdir, snakes)
 					end

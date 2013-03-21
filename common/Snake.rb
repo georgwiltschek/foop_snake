@@ -52,8 +52,8 @@ class Snake
 		snakes.each do |snake|
 
 			snake.get_tail.each do |segment|
-				if next_x == segment.get_x &&
-				   next_y == segment.get_y &&
+				if next_x == segment.get_x &&         # sometimes strange things
+				   next_y == segment.get_y &&         # happen FIXME
 				   snake.get_tail.index(segment) != 0 # head collision TODO
 				then
 
