@@ -5,29 +5,68 @@ class Snake
 		@color = color
 		@tail = Array.new
 		@tail.push(self)
+		@log = Logger.new(STDOUT)
 	end
 
-	def opposite(d)
+	def opposite d
 		case d
+
 			when :left
 				return :right
+
 			when :right
 				return :left
+
 			when :up
 				return :down
+
 			when :down
 				return :up
+
 		end
 
 		return nil
 	end
 
-	def move direction
+	def move direction, snakes
 		if opposite(@lastdirection) == direction then
 			direction = @lastdirection
 		end
 
 		@lastdirection = direction
+		next_x = @pos_x
+		next_y = @pos_y
+
+		case direction
+
+			when :right
+				next_x = @pos_x + 1
+			when :left
+				next_x = @pos_x - 1
+
+			when :down
+				next_y = @pos_y + 1
+
+			when :up
+				next_y = @pos_y - 1
+
+		end
+
+		# collision detection
+		snakes.each do |snake|
+			if snake == self
+				# next
+			end
+			snake.get_tail.each do |segment|
+				if next_x == segment.get_x &&
+				   next_y == segment.get_y then
+
+					@log.info 'collision detected'
+					return
+
+				end
+			end
+		end
 
 		# last segment set to position of first
 		@tail.last.set_y(@tail.first.get_y)
@@ -39,23 +78,15 @@ class Snake
 			@tail.insert(1, last)
 		end
 
-		# move first segment
-		case direction
-			when :right
-				@tail.first.set_x(@pos_x = @pos_x + 1)
-			when :left
-				@tail.first.set_x(@pos_x = @pos_x - 1)
-			when :down
-				@tail.first.set_y(@pos_y = @pos_y + 1)
-			when :up
-				@tail.first.set_y(@pos_y = @pos_y - 1)
-		end
+		@tail.first.set_x(next_x)
+		@tail.first.set_y(next_y)
 	end
 
 	def update delta, direction
 		# let the snake grow for a while
 		if @tail.length < 20 then
 			case direction
+
 				when :right
 					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color)
 
@@ -63,10 +94,11 @@ class Snake
 					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color)
 
 				when :up
-					t = Snake.new(@tail.last.get_x,     @tail.last.get_y + 1, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y + 1, @tail.last.get_color)
 
 				when :down
-					t= Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color)
+
 			end
 
 			if t != nil then
@@ -98,4 +130,9 @@ class Snake
 	def get_color
 		return @color
 	end
+
+	def set_color c
+		@color = c
+	end
+
 end

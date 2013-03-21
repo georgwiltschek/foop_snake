@@ -2,31 +2,37 @@
 
 require 'sdl'
 require 'logger'
+
 require "#{File.dirname(__FILE__)}/../common/Snake"
 
 class Client
 
 	def initialize
-		SDL.init SDL::INIT_VIDEO
 		@w = 640
 		@h = 480
-		@screen = SDL::set_video_mode @w, @h, 24, SDL::SWSURFACE
-		x = y = 0
 
-		@BGCOLOR   = @screen.format.mapRGB 0, 0, 0
+		SDL.init SDL::INIT_VIDEO
+		
+		@screen	 = SDL::set_video_mode @w, @h, 24, SDL::SWSURFACE
+		@BGCOLOR = @screen.format.mapRGB 0, 0, 0
 
 		@log = Logger.new(STDOUT)
+
 		@running = false
 	end
 
 	def handle_input
 		event = SDL::Event2.poll
+
 		case event
+
 			when SDL::Event2::Quit
 				@running = false
 
 			when SDL::Event2::KeyDown
+
 				case event.sym
+
 					when SDL::Key::ESCAPE
 						@running = false
 
@@ -41,11 +47,14 @@ class Client
 
 					when SDL::Key::DOWN
 						direction = :down
-				end
 
-			@log.info("Key Event: #{event.sym} #{direction}")
-			return direction
+				@log.info "Key Event: #{event.sym} #{direction}"
+				return direction
+
+			end
+			
 		end
+
 	end
 
 	# draws all the snakes
@@ -64,12 +73,14 @@ class Client
 	def run
 		snakes = Array.new
 
-		snake = Snake.new(8,8,123456)
-		snakes.push(snake)
+		player = Snake.new(8, 8, 123456)
+		snakes.push(player)
 		
 		# just for fun
-		snake2 = Snake.new(40,40,98765)
-		snakes.push(snake2)
+		snakes.push(Snake.new(40, 40, 98765))
+		snakes.push(Snake.new(15, 15, 8000000))
+		snakes.push(Snake.new(60, 15, 4324324))
+		snakes.push(Snake.new(45, 60, 43234))
 	
 		@running = true
 		
@@ -77,7 +88,7 @@ class Client
 
 		# main loop
 		while @running
-			d = (Time.now - t) * 1000
+			d = (Time.now - t) * 1000 
 
 			# this should be sent to the server
 			direction = handle_input
@@ -88,14 +99,44 @@ class Client
 			# tick
 			if (d > 100) then
 				t = Time.now
-				@log.info("tick")
+				@log.info "tick"
+
+				# receive game-related stuff from server TODO
+				# send directions to server TODO
 
 				# this should go on the server side
 				snakes.each do |snake|
-					# growth and stuff
-					snake.update(d, dir)
-					# movement
-					snake.move(dir)
+
+					if snake == player then
+
+						# growth and stuff
+						snake.update(d, dir)
+
+						# movement
+						snake.move(dir, snakes)
+
+					else
+						# funstuff again, just for having something to watch
+						case rand(4)
+
+							when 0
+								rdir = :up
+
+							when 1
+								rdir = :right
+
+							when 2
+								rdir = :left
+
+							when 3
+								rdir = :down
+
+						end
+
+						snake.update(d, rdir)
+						snake.move(rdir, snakes)
+
+					end
 				end
 			end
 			
