@@ -107,7 +107,7 @@ class Snake
 		end
 
 		if @grow > 0 then
-			@grow = @grow - 1
+
 			case direction
 
 				when :right
@@ -126,6 +126,7 @@ class Snake
 
 			if t != nil then
 				@tail.push(t)
+				@grow = @grow - 1
 			end
 		end
 	end

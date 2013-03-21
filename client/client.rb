@@ -134,7 +134,6 @@ class Client
 
 						snake.update(d, rdir)
 						snake.move(rdir, snakes)
-
 					end
 				end
 			end
