@@ -1,13 +1,14 @@
 class Snake
 
 	# Constructor
-	def initialize x, y, color
+	def initialize x, y, color, name
 		@log = Logger.new(STDOUT)
 		@pos_x = x
 		@pos_y = y
 		@color = color
 		@tail = Array.new			# the whole snake
 		@tail.push(self)
+		@name = name
 		@grow = 9 					# initial growth
 	end
 
@@ -49,10 +50,10 @@ class Snake
 
 	   				if snake == self
 	   					# collision with self, do nothing
-						@log.info 'collision with self detected'
+						@log.info "#{self.get_name}: collision with self detected"
 					else
 						# collision with other snake, eat & grow
-						@log.info 'collision detected'
+						@log.info "#{self.get_name}: collision with #{segment.get_name} detected"
 						@grow = snake.remove_from_segment(segment)
 					end
 
@@ -100,16 +101,16 @@ class Snake
 			case direction
 
 				when :right
-					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color, self.get_name)
 
 				when :left
-					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color, self.get_name)
 
 				when :up
-					t = Snake.new(@tail.last.get_x, @tail.last.get_y + 1, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y + 1, @tail.last.get_color, self.get_name)
 
 				when :down
-					t = Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color, self.get_name)
 
 			end
 
@@ -169,6 +170,10 @@ class Snake
 
 	def get_color
 		return @color
+	end
+
+	def get_name
+		return @name
 	end
 
 	def set_color c

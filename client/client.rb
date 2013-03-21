@@ -73,13 +73,13 @@ class Client
 	def run
 		snakes = Array.new
 
-		player = Snake.new(8, 8, 123456)
+		player = Snake.new(8, 8, 123456, "Clyde")
 		snakes.push(player)
 		
 		# just for fun
-		snakes.push(Snake.new(40, 40, 98765))
-		snakes.push(Snake.new(15, 15, 8000000))
-		snakes.push(Snake.new(60, 15, 4324324))
+		snakes.push(Snake.new(40, 40, 98765, "Pinky"))
+		snakes.push(Snake.new(15, 15, 8000000, "Blinky"))
+		snakes.push(Snake.new(60, 15, 4324324, "Inky"))
 	
 		@running = true
 		
