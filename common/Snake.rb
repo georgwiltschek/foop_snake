@@ -2,14 +2,18 @@ class Snake
 
 	# Constructor
 	def initialize x, y, color, name
-		@log = Logger.new(STDOUT)
+		@log   = Logger.new(STDOUT)
+		@tail  = Array.new # the whole snake, despite the name :)
+
 		@pos_x = x
 		@pos_y = y
 		@color = color
-		@tail = Array.new			# the whole snake
-		@tail.push(self)
 		@name = name
-		@grow = 9 					# initial growth
+
+		# initial growth
+		@grow = 9
+
+		@tail.push(self)
 	end
 
 	# move and detect collisions
