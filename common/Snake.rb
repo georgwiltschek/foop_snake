@@ -1,14 +1,16 @@
 class Snake
 
 	# Constructor
-	def initialize x, y, color, name, mode = :snake
+	def initialize x, y, color, name, mode, w, h
 		@log   = Logger.new(STDOUT)
 		@tail  = Array.new # the whole snake, despite the name :)
-		@mode = mode
+		@mode  = mode
 		@pos_x = x
 		@pos_y = y
 		@color = color
 		@name  = name
+		@w = w
+		@h = h
 
 		# initial growth
 		if mode == :snake then
@@ -115,16 +117,16 @@ class Snake
 			case direction
 
 				when :right
-					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color, self.get_name)
+					t = Snake.new(@tail.last.get_x - 1, @tail.last.get_y, @tail.last.get_color, self.get_name, @mode, @w, @h)
 
 				when :left
-					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color, self.get_name)
+					t = Snake.new(@tail.last.get_x + 1, @tail.last.get_y, @tail.last.get_color, self.get_name, @mode, @w, @h)
 
 				when :up
-					t = Snake.new(@tail.last.get_x, @tail.last.get_y + 1, @tail.last.get_color, self.get_name)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y + 1, @tail.last.get_color, self.get_name, @mode, @w, @h)
 
 				when :down
-					t = Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color, self.get_name)
+					t = Snake.new(@tail.last.get_x, @tail.last.get_y - 1, @tail.last.get_color, self.get_name, @mode, @w, @h)
 
 			end
 
@@ -175,11 +177,11 @@ class Snake
 	end
 	
 	def set_x x
-		@pos_x = x
+		@pos_x = x % (@w)
 	end
 
 	def set_y y
-		@pos_y = y
+		@pos_y = y % (@h)
 	end
 
 	def get_color

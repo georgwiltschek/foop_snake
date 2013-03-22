@@ -8,12 +8,13 @@ require "#{File.dirname(__FILE__)}/../common/Snake"
 class Client
 
 	def initialize
-		@w = 640
-		@h = 480
+		@scale = 8
+		@w = 640 / 8
+		@h = 480 / 8
 
 		SDL.init SDL::INIT_VIDEO
 		
-		@screen	 = SDL::set_video_mode @w, @h, 24, SDL::SWSURFACE
+		@screen	 = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
 		@BGCOLOR = @screen.format.mapRGB 0, 0, 0
 
 		@log = Logger.new(STDOUT)
@@ -61,11 +62,11 @@ class Client
 	def draw snakes
 		# TODO maybe check the SDL documentation, since the game tends
 		# to stop redrawing after a while
-		@screen.fill_rect 0, 0, 640, 480, @BGCOLOR
+		@screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
 
 		snakes.each do |snake|
 			snake.get_tail.each do |t|
-				@screen.fill_rect t.get_x*8 % @w, t.get_y*8 % @h, 8, 8,t.get_color
+				@screen.fill_rect t.get_x * @scale, t.get_y * @scale, 8, 8,t.get_color
 			end
 		end
 
@@ -77,17 +78,16 @@ class Client
 
 		mode = :snake # or :tron :-)
 
-		player = Snake.new(8, 8, 123456, "Clyde", mode)
+		player = Snake.new(8, 8, 123456, "Clyde", mode, @w, @h)
 		snakes.push(player)
 		
 		# just for fun and testing
-		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode))
-		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode))
-		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode))
+		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode, @w, @h))
+		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode, @w, @h))
+		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode, @w, @h))
 	
 		@running = true	
 		t = Time.now
-
 		# main loop
 		while @running
 			d = (Time.now - t) * 1000 # elapsed time since last tick
