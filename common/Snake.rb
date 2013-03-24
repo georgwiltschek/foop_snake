@@ -4,12 +4,13 @@ require "json"
 class Snake
   
   class Tail
-    attr_accessor :x, :y, :color
+    attr_accessor :x, :y, :color, :snake
     
-    def initialize (x,y,color)
+    def initialize (x,y,color,snake)
       @x = x
       @y = y
       @color = color
+      @snake = snake
     end
     
     def to_json(*a)
@@ -22,7 +23,7 @@ class Snake
   
     # i cant get this running for shit.. ideas?
     def self.json_create(o)
-      new(o['data']['x'],o['data']['y'],o['data']['color'])
+      new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
     end
   end
 
@@ -46,7 +47,7 @@ class Snake
 		end
 
 		# add self as first segment of the snake
-		@tail.push(Tail.new(@pos_x,@pos_y,@color))
+		@tail.push(Tail.new(@pos_x,@pos_y,@color,self))
 	end
 	
   def update_tail(jsonTail)
@@ -54,8 +55,7 @@ class Snake
     newTail = JSON.parse(jsonTail)
     # p newTail
     newTail.each do |o|
-      @tail.push(Tail.new(o['data']['x'],o['data']['y'],o['data']['color']))
-      # p Tail.new(o['data']['x'],o['data']['y'],o['data']['color'])
+      @tail.push(Tail.new(o['data']['x'],o['data']['y'],o['data']['color'],self))
     end
   end
   
@@ -87,29 +87,29 @@ class Snake
 		end
 
     # # collision detection
-    # snakes.each do |snake|
-    # 
-    #   snake.get_tail.each do |segment|
-    #     if next_x == segment.x &&         # sometimes strange things
-    #        next_y == segment.y &&         # happen FIXME
-    #        snake.get_tail.index(segment) != 0 # head collision TODO
-    #     then
-    # 
-    #              if snake == self
-    #                # collision with self, do nothing
-    #         @log.info "#{self.get_name}: collision with self detected"
-    #       else
-    #         # collision with other snake, eat & grow
-    #         @log.info "#{self.get_name}: collision with #{segment.get_name} detected"
-    #         @grow = @grow + snake.remove_from_segment(segment)
-    #       end
-    # 
-    #       # one collision is enough, return
-    #       return
-    # 
-    #     end
-    #   end
-    # end
+    snakes.each do |snake|
+    
+      snake.get_tail.each do |segment|
+        if next_x == segment.x &&         # sometimes strange things
+           next_y == segment.y &&         # happen FIXME
+           snake.get_tail.index(segment) != 0 # head collision TODO
+        then
+    
+          if snake == self
+           # collision with self, do nothing
+            @log.info "#{self.get_name}: collision with self detected"
+          else
+            # collision with other snake, eat & grow
+            @log.info "#{self.get_name}: collision with #{segment.snake.get_name} detected"
+            @grow = @grow + snake.remove_from_segment(segment)
+          end
+    
+          # one collision is enough, return
+          return
+    
+        end
+      end
+    end
 
 		# in tron mode, always grow 1
 		if @mode == :tron then @grow = 1 end
@@ -153,16 +153,16 @@ class Snake
 			case direction
 
 				when :right
-					t = Tail.new(@tail.last.x - 1, @tail.last.y, @tail.last.color)
+					t = Tail.new(@tail.last.x - 1, @tail.last.y, @tail.last.color,self)
 
 				when :left
-					t = Tail.new(@tail.last.x + 1, @tail.last.y, @tail.last.color)
+					t = Tail.new(@tail.last.x + 1, @tail.last.y, @tail.last.color,self)
 
 				when :up
-					t = Tail.new(@tail.last.x, @tail.last.y + 1, @tail.last.color)
+					t = Tail.new(@tail.last.x, @tail.last.y + 1, @tail.last.color,self)
 
 				when :down
-					t = Tail.new(@tail.last.x, @tail.last.y - 1, @tail.last.color)
+					t = Tail.new(@tail.last.x, @tail.last.y - 1, @tail.last.color,self)
 
 			end
 

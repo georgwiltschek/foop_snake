@@ -2,8 +2,8 @@ require "rubygems"
 require "json"
 require "logger"
 require 'socket'
-require "client-proxy"
-require "../common/Snake"
+require "#{File.dirname(__FILE__)}/client-proxy"
+require "#{File.dirname(__FILE__)}/../common/Snake"
 
 
 class Server
@@ -29,7 +29,7 @@ class Server
 		@log = Logger.new(STDOUT)
 		@w = 640 / 8
 		@h = 480 / 8
-    mode = :snake
+    mode = :snake # or :tron
     
 		snakes.push(Snake.new(8, 8, 123456, "Clyde", mode, @w, @h))  
 		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode, @w, @h))
@@ -103,11 +103,7 @@ class Server
         return slot
       end
     end
-    # slot = @slots.first
-    # slot.client.client = client
-    # return slot
-    # puts "no free slot"
-    # client.close
+
   end
   
 end
