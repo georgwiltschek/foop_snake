@@ -2,6 +2,8 @@
 
 require 'sdl'
 require 'logger'
+require 'rubygems'
+require 'json'
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
 
@@ -66,7 +68,7 @@ class Client
 
 		snakes.each do |snake|
 			snake.get_tail.each do |t|
-				@screen.fill_rect t.get_x * @scale, t.get_y * @scale, 8, 8,t.get_color
+				@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8,t.color
 			end
 		end
 
@@ -111,11 +113,19 @@ class Client
 
 					if snake == player then
 
+            snake.update_tail(player.get_tail.to_json)
+
 						# growth and stuff
 						snake.update(d, dir)
 
 						# movement
 						snake.move(dir, snakes)
+            
+            # p player.get_tail.first
+
+            # if player.get_tail.first == JSON.parse(JSON.dump(player.get_tail.first)) then
+#               puts "YES"
+#             end
 
 					else
 						# "AI" snakes
