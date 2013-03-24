@@ -1,18 +1,35 @@
-require "../common/Config"
+require "rubygems"
+require "json"
+require "logger"
 require 'socket'
 require "client-proxy"
+require "../common/Snake"
+
 
 class Server
   
   class Slot
-    :attr client
-    :attr snake
+    attr_accessor :client, :snake
+    
+    def initialize client, snake
+      @client = client
+      @snake = snake
+    end
+    
+    def to_s
+      return snake.name
+    end
+      
   end
   
   def initialize
     snakes = Array.new
     #@lastInput = Array.new
     @slots = Array.new
+		@log = Logger.new(STDOUT)
+		@w = 640 / 8
+		@h = 480 / 8
+    mode = :snake
     
 		snakes.push(Snake.new(8, 8, 123456, "Clyde", mode, @w, @h))  
 		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode, @w, @h))
@@ -20,7 +37,7 @@ class Server
 		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode, @w, @h))
     
     snakes.each do |snake|
-      @slots.push mew Slot(new ClientProxy, snake)
+      @slots.push Slot.new(ClientProxy.new, snake)
     end
     
     @running = true
@@ -31,28 +48,29 @@ class Server
   def run
     
     
-    @server = TCPServer.open(Config.new.port)
+    @server = TCPServer.open(9876)
     Thread.start { listen_for_clients }
     
+		t = Time.now
     while @running
 			d = (Time.now - t) * 1000 # elapsed time since last tick
 
 			# tick
 			if (d > 100) then
 				t = Time.now
-				@log.info "tick"
+        # @log.info "tick"
         
         snakes = @slots.map {|s| s.snake}
-        
+      
         @slots.each do |slot|
-          direction = slot.client.get_last_input
+          direction = slot.client.get_last_input          # 
           
           # growth and stuff
           slot.snake.update(d,direction)
           
           # movement
           slot.snake.move(direction, snakes)
-          
+          # 
           slot.client.update(snakes)
           
         end
@@ -66,20 +84,33 @@ class Server
   def listen_for_clients
     while @running
       client = @server.accept
-      slot = get_slot(client)
-      Thread.start(slot) do |slot|
-        slot.listen_for_input
-    end
-  end
-  
-  def get_slot(client)
-    for i in 0..@slots.size
-      if @slots[i].isBot then
-        @slots[i].isBot = false
-        @solts[i].client = client
-        return @slots[i]
+      Thread.start(client) do |client|
+        # slot.listen_for_input
+        puts "new client connected"
+        slot = get_slot(client)
+        puts "client got slot " #+ @slots[i]
+        slot.client.listen_for_input
       end
     end
   end
   
+  def get_slot(client)
+    @slots.each do |slot|
+      puts "."
+      if slot.client.isBot == true then
+        slot.client.isBot = false
+        slot.client.client = client
+        return slot
+      end
+    end
+    # slot = @slots.first
+    # slot.client.client = client
+    # return slot
+    # puts "no free slot"
+    # client.close
+  end
+  
 end
+
+server = Server.new
+server.run

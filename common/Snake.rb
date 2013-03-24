@@ -52,10 +52,10 @@ class Snake
   def update_tail(jsonTail)
     @tail.clear
     newTail = JSON.parse(jsonTail)
-    p newTail
+    # p newTail
     newTail.each do |o|
       @tail.push(Tail.new(o['data']['x'],o['data']['y'],o['data']['color']))
-      p Tail.new(o['data']['x'],o['data']['y'],o['data']['color'])
+      # p Tail.new(o['data']['x'],o['data']['y'],o['data']['color'])
     end
   end
   

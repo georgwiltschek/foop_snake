@@ -4,6 +4,7 @@ require 'sdl'
 require 'logger'
 require 'rubygems'
 require 'json'
+require 'socket'
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
 
@@ -75,19 +76,45 @@ class Client
 		@screen.flip	
 	end
 
+  def connect_to_server
+    @socket = TCPSocket.open("localhost", 9876)
+  end
+  
+  def send_direction(direction)
+    package = {"direction"  => direction}
+    jsonPackage = JSON.dump(package)
+    # p package
+    p jsonPackage
+    @socket.puts(jsonPackage)
+  end
+  
+  def get_update
+    line = @socket.gets.chop
+    die "connection lost" if !line
+    
+    json = JSON.parse(line)
+    # p json
+    
+    update_snakes json
+  end
+
+  def update_snakes update
+    update.each do |snake|
+      # p snake
+      @snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
+    end
+  end
+
 	def run
-		snakes = Array.new
+		@snakes = Array.new
 
-		mode = :snake # or :tron :-)
+		@snakes.push(Snake.new(8, 8, 123456, "Clyde", nil, @w, @h))  
+		@snakes.push(Snake.new(40, 40, 98765,   "Pinky",  nil, @w, @h))
+		@snakes.push(Snake.new(15, 15, 8000000, "Blinky", nil, @w, @h))
+		@snakes.push(Snake.new(60, 15, 4324324, "Inky",   nil, @w, @h))
 
-		player = Snake.new(8, 8, 123456, "Clyde", mode, @w, @h)
-		snakes.push(player)
-		
-		# just for fun and testing
-		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode, @w, @h))
-		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode, @w, @h))
-		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode, @w, @h))
-	
+    die "can't connect to server" unless connect_to_server
+
 		@running = true	
 		t = Time.now
 		# main loop
@@ -101,57 +128,16 @@ class Client
 			end
 
 			# tick
-			if (d > 100) then
+			if (d > 10) then
 				t = Time.now
-				@log.info "tick"
+        # @log.info "tick"
 
-				# receive game-related stuff from server TODO
-				# send directions to server TODO
-
-				# this should go on the server side TODO
-				snakes.each do |snake|
-
-					if snake == player then
-
-            snake.update_tail(player.get_tail.to_json)
-
-						# growth and stuff
-						snake.update(d, dir)
-
-						# movement
-						snake.move(dir, snakes)
-            
-            # p player.get_tail.first
-
-            # if player.get_tail.first == JSON.parse(JSON.dump(player.get_tail.first)) then
-#               puts "YES"
-#             end
-
-					else
-						# "AI" snakes
-						case rand(4)
-
-							when 0
-								rdir = :up
-
-							when 1
-								rdir = :right
-
-							when 2
-								rdir = :left
-
-							when 3
-								rdir = :down
-
-						end
-						
-						snake.update(d, rdir)
-						snake.move(rdir, snakes)
-					end
-				end
-			end
+        send_direction(dir)
+        
+        get_update
+      end
 			
-			draw(snakes)
+      draw(@snakes)
 		end
 	end
 end

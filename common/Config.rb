@@ -5,4 +5,5 @@ class Config
   def initialize
     @ip = "localhost"
     @port = 9876
+  end
 end
