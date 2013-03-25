@@ -115,7 +115,11 @@ class Client
 
     die "can't connect to server" unless connect_to_server
 
-		@running = true	
+    	changed = false
+
+		@running = true
+		lastdir = nil
+
 		t = Time.now
 		# main loop
 		while @running
@@ -124,20 +128,24 @@ class Client
 			# this should be sent to the server
 			direction = handle_input
 			if direction != nil then
-				dir = direction
+				changed = lastdir != direction
+				lastdir = dir = direction
 			end
 
 			# tick
 			if (d > 10) then
 				t = Time.now
-        # @log.info "tick"
+		        # @log.info "tick"
 
-        send_direction(dir)
-        
-        get_update
-      end
-			
-      draw(@snakes)
+		        if changed
+		        	send_direction(dir)
+		        	changed = false
+		        end
+
+		    	get_update
+	    	end
+					
+		    draw(@snakes)
 		end
 	end
 end
