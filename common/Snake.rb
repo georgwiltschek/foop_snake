@@ -90,14 +90,16 @@ class Snake
     snakes.each do |snake|
     
       snake.get_tail.each do |segment|
-        if next_x == segment.x &&         # sometimes strange things
-           next_y == segment.y &&         # happen FIXME
-           snake.get_tail.index(segment) != 0 # head collision TODO
+        if next_x == segment.x &&
+           next_y == segment.y && 
+           snake.get_tail.index(segment) != 0
         then
-    
+          # snake chops of another snakes tail
           if snake == self
            # collision with self, do nothing
-            @log.info "#{self.get_name}: collision with self detected"
+
+           # too much information
+           # @log.info "#{self.get_name}: collision with self detected"
           else
             # collision with other snake, eat & grow
             @log.info "#{self.get_name}: collision with #{segment.snake.get_name} detected"
@@ -106,7 +108,26 @@ class Snake
     
           # one collision is enough, return
           return
-    
+   
+		elsif next_x == segment.x &&
+              next_y == segment.y &&
+              snake.get_tail.index(segment) == 0
+        then
+        	# head collisions
+        	# TODO
+        	# this is a really simple set of rules for killing other snakes,
+        	# but if we put the colors in an array and check if 
+        	# colors.index_of snake.color > colors.index_self color or something
+        	# like that, we could manipulate the rules easily by randomising
+        	# the colors array every x seconds and pushing it to all the snakes
+        	if snake.get_color < self.get_color
+        		@log.info "I'd eat and kill that snake if someone would implement it #IMPLEMENTME";
+        	elsif snake.get_color > self.get_color
+        		@log.info "This snake will kill me! HALP! #IMPLEMENTME";
+        	elsif snake.get_color == self.get_color
+        		@log.info "Hooray we're the same! #nothingtoimplementmaybe";
+        	end
+
         end
       end
     end
