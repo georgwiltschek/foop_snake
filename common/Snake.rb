@@ -1,10 +1,11 @@
-require "json"
+# require "json"
 
 
 class Snake
-  
+  attr_accessor :isDead
+
   class Tail
-    attr_accessor :x, :y, :color, :snake
+    attr_accessor :x, :y, :color, :snake, :isDead
     
     def initialize (x,y,color,snake)
       @x = x
@@ -19,7 +20,6 @@ class Snake
         'data'         => {"x" => @x , "y" => @y, "color" => @color},
       }.to_json(*a)
     end
-  
   
     # i cant get this running for shit.. ideas?
     def self.json_create(o)
@@ -38,6 +38,7 @@ class Snake
 		@name  = name
 		@w = w
 		@h = h
+      	@isDead = false
 
 		# initial growth
 		if mode == :snake then
@@ -121,9 +122,13 @@ class Snake
         	# like that, we could manipulate the rules easily by randomising
         	# the colors array every x seconds and pushing it to all the snakes
         	if snake.get_color < self.get_color
-        		@log.info "I'd eat and kill that snake if someone would implement it #IMPLEMENTME";
+        		@log.info "Omnomnomnom";
+        		@grow = @grow + snake.remove_from_segment(snake.get_tail.first)
         	elsif snake.get_color > self.get_color
-        		@log.info "This snake will kill me! HALP! #IMPLEMENTME";
+        		# TODO this shouldn't need any implementation, since the other snake
+        		# should catch the above condition, but somehow it doesn't work
+        		# :( #fixme
+        		@log.info "This snake will kill me! HALP!";
         	elsif snake.get_color == self.get_color
         		@log.info "Hooray we're the same! #nothingtoimplementmaybe";
         	end
@@ -166,6 +171,7 @@ class Snake
 
 		if @tail.length == 0 then
 			#die
+			@isDead = true;
 			return
 		end
 
@@ -236,7 +242,4 @@ class Snake
 	def set_color c
 		@color = c
 	end
-    
-  
-
 end

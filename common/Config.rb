@@ -1,4 +1,3 @@
-
 class Config
   attr_accessor :ip, :port
   

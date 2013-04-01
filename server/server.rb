@@ -9,7 +9,7 @@ require "#{File.dirname(__FILE__)}/../common/Snake"
 class Server
   
   class Slot
-    attr_accessor :client, :snake
+    attr_accessor :client, :snake, :direction
     
     def initialize client, snake
       @client = client
@@ -63,16 +63,23 @@ class Server
         snakes = @slots.map {|s| s.snake}
       
         @slots.each do |slot|
-          direction = slot.client.get_last_input          # 
+          slot.direction = slot.client.get_last_input          # 
+        end
+
+        # growth and stuff
+        @slots.each do |slot|          
+          slot.snake.update(d , slot.direction)
+        end
           
-          # growth and stuff
-          slot.snake.update(d,direction)
-          
+        @slots.each do |slot|
           # movement
-          slot.snake.move(direction, snakes)
-          # 
+          if !slot.snake.isDead && !slot.client.isBot
+            slot.snake.move(slot.direction, snakes)
+          end
+        end
+
+        @slots.each do |slot|
           slot.client.update(snakes)
-          
         end
         
       end
