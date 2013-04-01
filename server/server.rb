@@ -73,7 +73,7 @@ class Server
           
         @slots.each do |slot|
           # movement
-          if !slot.snake.isDead && !slot.client.isBot
+          if !slot.snake.isDead
             slot.snake.move(slot.direction, snakes)
           end
         end
