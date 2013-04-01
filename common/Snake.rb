@@ -161,6 +161,11 @@ class Snake
 
 		total = @tail.length
 		@tail.slice!(@tail.index(segment), @tail.length)
+
+		if @tail.length <= 0 
+			@isDead = true
+		end
+		
 		return total - @tail.length
 	end
 

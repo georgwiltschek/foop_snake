@@ -46,7 +46,7 @@ class ClientProxy
     
       end
     end
-    
+
     return @lastInput
 
   end

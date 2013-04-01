@@ -63,7 +63,7 @@ class Server
         snakes = @slots.map {|s| s.snake}
       
         @slots.each do |slot|
-          slot.direction = slot.client.get_last_input          # 
+          slot.direction = slot.client.get_last_input
         end
 
         # growth and stuff
