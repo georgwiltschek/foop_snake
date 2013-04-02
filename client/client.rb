@@ -7,16 +7,65 @@ require 'json'
 require 'socket'
 require 'opengl'
 require 'gl'
+require 'mathn'
 include Gl,Glu,Glut
 
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
 require "#{File.dirname(__FILE__)}/../common/Shader"
 
+ImageWidth = 20
+ImageHeight = 20
+$image = []
+$texName = []
+
+def makeImage
+	for i in 0...ImageWidth
+		ti = 2.0*Math::PI*i/ImageWidth.to_f
+		for j in 0...ImageHeight
+			tj = 2.0*Math::PI*j/ImageHeight.to_f
+
+			$image[3*(ImageHeight*i+j)] =  127*(1.0+Math::sin(ti))
+			$image[3*(ImageHeight*i+j)+1] =  127*(1.0+Math::cos(2*tj))
+			$image[3*(ImageHeight*i+j)+2] =  127*(1.0+Math::cos(ti+tj))
+		end
+	end
+end
+
+def makeStripeImage
+	for j in (0..ImageWidth)
+		$image[4*j] = if (j<=4) then 255 else 0 end
+		$image[4*j+1] = if (j>4) then 255 else 0 end
+		$image[4*j+2] = 0
+		$image[4*j+3] = 255
+	end
+end
+
+def makeCheckImages
+	for i in (0..ImageHeight-1)
+		for j in (0..ImageWidth-1)
+			if ((i&0x8==0)!=(j&0x8==0)) then tmp = 1 else tmp=0 end
+			#c = ((((i&0x8)==0)^((j&0x8))==0))*255
+			c = tmp * 255
+			$image[i*ImageWidth*4+j*4+0] = c
+			$image[i*ImageWidth*4+j*4+1] = c
+			$image[i*ImageWidth*4+j*4+2] = c
+			$image[i*ImageWidth*4+j*4+3] = 255
+			#c = ((((i&0x10)==0)^((j&0x10))==0))*255
+			if ((i&0x10==0)!=(j&0x10==0)) then tmp = 1 else tmp=0 end
+			c = tmp * 255
+			$image[i*ImageWidth*4+j*4+0] = c
+			$image[i*ImageWidth*4+j*4+1] = 0
+			$image[i*ImageWidth*4+j*4+2] = 0
+			$image[i*ImageWidth*4+j*4+3] = 255
+		end
+	end
+end
+
 class Client
 
 	def initialize
-		@scale = 8
+		@scale = 20
 		@w = 640 / 8
 		@h = 480 / 8
 
@@ -40,7 +89,21 @@ class Client
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity()
     
-    # GL.ClearDepth(1.0)
+
+    # texture stuff?
+    # makeImage
+    # makeStripeImage
+    makeCheckImages
+    
+  	$texName = glGenTextures(1)
+  	glBindTexture(GL_TEXTURE_2D, $texName[0])
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+  	glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
+  		GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
+  	glEnable(GL_TEXTURE_2D)
     
 
 		@log = Logger.new(STDOUT)
@@ -117,16 +180,23 @@ class Client
 
     # puts "#{red} #{green} #{blue}"
     glColor red, green, blue
+  	glBindTexture(GL_TEXTURE_2D, $texName[0])
+
 
     glBegin Gl::GL_POLYGON
-    # glColor3f( 1.0, 0.0, 0.0 )
-  	glVertex2f( x, y )
-    # glColor3f( 0.0, 1.0, 0.0 )
-  	glVertex2f( x,  y+h )
-    # glColor3f( 0.0, 0.0, 1.0 )
-  	glVertex2f(  x+h,  y+h )
-    # glColor3f( 1.0, 0.0, 1.0 )
-  	glVertex2f(  x+h, y )
+      glNormal3f( 0.0,  0.0,  1.0)
+      glTexCoord2f(0.0, 1.0)
+      # glColor3f( 1.0, 0.0, 0.0 )
+    	glVertex2f( x, y )
+      glTexCoord2f(1.0, 1.0)
+      # glColor3f( 0.0, 1.0, 0.0 )
+    	glVertex2f( x,  y+h )
+      glTexCoord2f(1.0, 0.0)
+      # glColor3f( 0.0, 0.0, 1.0 )
+    	glVertex2f(  x+h,  y+h )
+      glTexCoord2f(0.0, 0.0)
+      # glColor3f( 1.0, 0.0, 1.0 )
+    	glVertex2f(  x+h, y )
   	glEnd
     
   end
@@ -139,10 +209,12 @@ class Client
     # perspective(projectionmatrix, 45.0, 1.0, 0.1, 100.0)
     # gl_fill_rect 0,0,100,100, 0
     
-    @hblur.apply
+    # @hblur.apply
+    # @shiny.apply
+    # @velvet.apply
     snakes.each do |snake|
       snake.get_tail.each do |t|
-        gl_fill_rect t.x * @scale, t.y * @scale, 8, 8,t.color
+        gl_fill_rect t.x * @scale, t.y * @scale, @scale, @scale,t.color
       end
     end
     
