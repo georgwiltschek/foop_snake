@@ -30,7 +30,7 @@ class Client
     SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
     glViewport(0,0,@w * @scale, @h * @scale)
     
-    GL.ClearColor(0.0, 1.0, 0.0, 0.0)
+    GL.ClearColor(0.0, 0.0, 0.0, 0.0)
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -99,8 +99,19 @@ class Client
     # @screen.flip  
 	end
   
-  def gl_fill_rect x,y,w,h,color
-    glColor 1,0,0
+  def gl_fill_rect x,y,w,h,rgb
+
+    red = (rgb >> 16) & 0xff;
+    green = (rgb >> 8) & 0xff;
+    blue = (rgb >> 0) & 0xff;
+
+    red = red/255.0
+    green = green/255.0
+    blue = blue/255.0
+
+    # puts "#{red} #{green} #{blue}"
+    glColor red, green, blue
+
     glBegin Gl::GL_POLYGON
     # glColor3f( 1.0, 0.0, 0.0 )
   	glVertex2f( x, y )
