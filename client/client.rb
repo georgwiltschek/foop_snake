@@ -11,6 +11,7 @@ include Gl,Glu,Glut
 
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
+require "#{File.dirname(__FILE__)}/../common/Shader"
 
 class Client
 
@@ -45,6 +46,11 @@ class Client
 		@log = Logger.new(STDOUT)
 
 		@running = false
+    
+    # and now... the shaders
+    @shiny = Shader.new('shiny')
+    @velvet = Shader.new('velvet')
+    @hblur = Shader.new('hblur')
 	end
 
 	def handle_input
@@ -133,11 +139,13 @@ class Client
     # perspective(projectionmatrix, 45.0, 1.0, 0.1, 100.0)
     # gl_fill_rect 0,0,100,100, 0
     
+    @hblur.apply
     snakes.each do |snake|
       snake.get_tail.each do |t|
         gl_fill_rect t.x * @scale, t.y * @scale, 8, 8,t.color
       end
     end
+    
     
     SDL.GL_swap_buffers
   end
