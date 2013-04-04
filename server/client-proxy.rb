@@ -1,4 +1,3 @@
-
 class ClientProxy
   attr_accessor :client, :lastInput, :isBot
   

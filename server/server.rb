@@ -42,11 +42,22 @@ class Server
 
     mode = :snake # or :tron
 
-		snakes.push(Snake.new(8, 8,   :green,  "Clyde",  mode, @w, @h))  
-		snakes.push(Snake.new(40, 40, :red,    "Pinky",  mode, @w, @h))
-		snakes.push(Snake.new(15, 15, :blue,   "Blinky", mode, @w, @h))
-		snakes.push(Snake.new(60, 15, :yellow, "Inky",   mode, @w, @h))
-    
+    # TODO get from cmdline
+    num_snakes = 8
+
+    # TODO -> config
+    names = ["Clyde", "Pinky", "Inky", "Blinky"]
+
+    (1..num_snakes).each do |n|
+      name = "#{names[num_snakes % names.size]}#{n}"
+      x    = rand(@w)
+      y    = rand(@h)
+      mode = :snake
+      c    = @colors.keys[rand(@colors.keys.length)]
+      
+      snakes.push(Snake.new(x, y, c,  name,  mode, @w, @h))
+    end
+
     snakes.each do |snake|
       @slots.push Slot.new(ClientProxy.new, snake)
     end

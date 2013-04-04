@@ -105,6 +105,15 @@ class Client
 
 	# update each snake
 	def update_snakes update
+		# on client start, create all the local snakes from the first update
+		if @snakes.size == 0 then
+			update.each do |snake|
+				s = Snake.new(0, 0, 0x000000, snake["name"], nil, 0, 0)
+				@snakes.push(s)
+				puts "new snalke"
+			end
+		end
+
 		update.each do |snake|
 			@snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
 		end
@@ -115,12 +124,6 @@ class Client
 		@snakes  = Array.new
 		@running = true
 		lastdir  = nil
-
-		@snakes.push(Snake.new(8,  8,  :green,  "Clyde",  nil, @w, @h))  
-		@snakes.push(Snake.new(40, 40, :red,    "Pinky",  nil, @w, @h))
-		@snakes.push(Snake.new(15, 15, :blue,   "Blinky", nil, @w, @h))
-		@snakes.push(Snake.new(60, 15, :purple, "Inky",   nil, @w, @h))
-
 
 		die "can't connect to server" unless connect_to_server
 
