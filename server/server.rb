@@ -40,13 +40,11 @@ class Server
       :orange => {:c => 0xFFC266, :i => 5}
     }
 
-    mode = :snake # or :tron
-
-    # TODO get from cmdline
+    # generate snakes
+    # TODO get all these from cmdline and/or config
     num_snakes = 8
-
-    # TODO -> config
-    names = ["Clyde", "Pinky", "Inky", "Blinky"]
+    names      = ["Clyde", "Pinky", "Inky", "Blinky"]
+    mode       = :snake # or :tron
 
     (1..num_snakes).each do |n|
       name = "#{names[num_snakes % names.size]}#{n}"
@@ -54,16 +52,13 @@ class Server
       y    = rand(@h)
       mode = :snake
       c    = @colors.keys[rand(@colors.keys.length)]
-      
-      snakes.push(Snake.new(x, y, c,  name,  mode, @w, @h))
+  
+      s = Snake.new(x, y, c,  name,  mode, @w, @h)
+      @slots.push Slot.new(ClientProxy.new, s)
+      snakes.push(s)
     end
 
-    snakes.each do |snake|
-      @slots.push Slot.new(ClientProxy.new, snake)
-    end
-    
     @running = true
-    
   end
   
   
