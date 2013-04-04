@@ -10,61 +10,57 @@ require "#{File.dirname(__FILE__)}/../common/Snake"
 
 class Client
 
-	def initialize
-		@scale = 8
-		@w = 640 / 8
-		@h = 480 / 8
+	# constructor
+	def initialize(ip, port)
+		@scale      = 8
+		@w          = 640 / @scale
+		@h          = 480 / @scale
+		@running    = false
+		@log        = Logger.new(STDOUT)
+		@serverip   = ip
+		@serverport = port
 
 		SDL.init SDL::INIT_VIDEO
 		
-		@screen	 = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
+		@screen  = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
 		@BGCOLOR = @screen.format.mapRGB 0, 0, 0
-
-		@log = Logger.new(STDOUT)
-
-		@running = false
 	end
 
 	def handle_input
 		event = SDL::Event2.poll
 
 		case event
-
+			# quit
 			when SDL::Event2::Quit
 				@running = false
-
+				return
+				
+			# other keys
 			when SDL::Event2::KeyDown
-
 				case event.sym
-
+					# quit via escape
 					when SDL::Key::ESCAPE
 						@running = false
+						return
 
+					# directions
 					when SDL::Key::LEFT
 						direction = :left
-
 					when SDL::Key::RIGHT
 						direction = :right
-
 					when SDL::Key::UP
 						direction = :up
-
 					when SDL::Key::DOWN
 						direction = :down
 
 				@log.info "Key Event: #{event.sym} #{direction}"
 				return direction
-
 			end
-			
 		end
-
 	end
 
 	# draws all the snakes
 	def draw snakes
-		# TODO maybe check the SDL documentation, since the game tends
-		# to stop redrawing after a while
 		@screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
 
 		snakes.each do |snake|
@@ -73,59 +69,57 @@ class Client
 			end
 		end
 
-		@screen.flip	
+		@screen.flip    
 	end
 
-  def connect_to_server
-    @socket = TCPSocket.open("localhost", 9876)
-  end
+	def connect_to_server
+		@socket = TCPSocket.open(@serverip, @serverport)
+	end
   
-  def send_direction(direction)
-    package = {"direction"  => direction}
-    jsonPackage = JSON.dump(package)
-    # p package
-    p jsonPackage
-    @socket.puts(jsonPackage)
-  end
+  	# send the direction to the sierver
+	def send_direction(direction)
+		package = {"direction"  => direction}
+		jsonPackage = JSON.dump(package)
+		p jsonPackage
+		@socket.puts(jsonPackage)
+	end
   
-  def get_update
-    line = @socket.gets.chop
-    die "connection lost" if !line
-    
-    json = JSON.parse(line)
-    # p json
-    
-    update_snakes json
-  end
+	# gets game state from server
+	def get_update
+		line = @socket.gets.chop
 
-  def update_snakes update
-    update.each do |snake|
-      # p snake
-      @snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
-    end
-  end
+		die "connection lost" if !line
+		
+		update_snakes JSON.parse(line)
+	end
+
+	# update each snake
+	def update_snakes update
+		update.each do |snake|
+			@snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
+		end
+	end
 
 	def run
-		@snakes = Array.new
+		changed  = false
+		@snakes  = Array.new
+		@running = true
+		lastdir  = nil
 
-		@snakes.push(Snake.new(8, 8, 123456, "Clyde", nil, @w, @h))  
+		@snakes.push(Snake.new(8,  8,  123456,  "Clyde",  nil, @w, @h))  
 		@snakes.push(Snake.new(40, 40, 98765,   "Pinky",  nil, @w, @h))
 		@snakes.push(Snake.new(15, 15, 8000000, "Blinky", nil, @w, @h))
 		@snakes.push(Snake.new(60, 15, 4324324, "Inky",   nil, @w, @h))
 
-    die "can't connect to server" unless connect_to_server
-
-    	changed = false
-
-		@running = true
-		lastdir = nil
+		die "can't connect to server" unless connect_to_server
 
 		t = Time.now
-		# main loop
+
+		# main game loop
 		while @running
 			d = (Time.now - t) * 1000 # elapsed time since last tick
 
-			# this should be sent to the server
+			# get direction changes from input handler
 			direction = handle_input
 			if direction != nil then
 				changed = lastdir != direction
@@ -135,21 +129,22 @@ class Client
 			# tick
 			if (d > 10) then
 				t = Time.now
-		        # @log.info "tick"
 
-		        if changed
-		        	send_direction(dir)
-		        	changed = false
-		        end
+				# send direction if changed
+				if changed
+					send_direction(dir)
+					changed = false
+				end
 
-		    	get_update
-	    	end
-					
-		    draw(@snakes)
+				# get updated gamestate from server
+				get_update
+			end
+
+			draw(@snakes)
 		end
 	end
 end
 
 # create and run new client
-c = Client.new
+c = Client.new("localhost", 9876)
 c.run
