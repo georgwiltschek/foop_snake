@@ -20,10 +20,20 @@ class Client
 		@serverip   = ip
 		@serverport = port
 
+	    # TODO dupe. put into config or somewhere else
+	    @colors = {
+	      :red    => {:c => 0xAD3333, :i => 0},
+	      :green  => {:c => 0x5CE65C, :i => 1},
+	      :yellow => {:c => 0xFFF666, :i => 2},
+	      :blue   => {:c => 0x3366FF, :i => 3},
+	      :purple => {:c => 0xFF70B8, :i => 4},
+	      :orange => {:c => 0xFFC266, :i => 5}
+	    }
+
+		# SDL init
 		SDL.init SDL::INIT_VIDEO
-		
 		@screen  = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
-		@BGCOLOR = @screen.format.mapRGB 0, 0, 0
+		@BGCOLOR = @screen.format.mapRGB 0, 0, 0 # black background
 	end
 
 	def handle_input
@@ -34,7 +44,7 @@ class Client
 			when SDL::Event2::Quit
 				@running = false
 				return
-				
+
 			# other keys
 			when SDL::Event2::KeyDown
 				case event.sym
@@ -65,7 +75,7 @@ class Client
 
 		snakes.each do |snake|
 			snake.get_tail.each do |t|
-				@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8,t.color
+				@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
 			end
 		end
 
@@ -106,10 +116,11 @@ class Client
 		@running = true
 		lastdir  = nil
 
-		@snakes.push(Snake.new(8,  8,  123456,  "Clyde",  nil, @w, @h))  
-		@snakes.push(Snake.new(40, 40, 98765,   "Pinky",  nil, @w, @h))
-		@snakes.push(Snake.new(15, 15, 8000000, "Blinky", nil, @w, @h))
-		@snakes.push(Snake.new(60, 15, 4324324, "Inky",   nil, @w, @h))
+		@snakes.push(Snake.new(8,  8,  :green,  "Clyde",  nil, @w, @h))  
+		@snakes.push(Snake.new(40, 40, :red,    "Pinky",  nil, @w, @h))
+		@snakes.push(Snake.new(15, 15, :blue,   "Blinky", nil, @w, @h))
+		@snakes.push(Snake.new(60, 15, :purple, "Inky",   nil, @w, @h))
+
 
 		die "can't connect to server" unless connect_to_server
 

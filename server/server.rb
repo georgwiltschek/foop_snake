@@ -5,7 +5,6 @@ require 'socket'
 require "#{File.dirname(__FILE__)}/client-proxy"
 require "#{File.dirname(__FILE__)}/../common/Snake"
 
-
 class Server
   
   class Slot
@@ -29,12 +28,24 @@ class Server
 		@log = Logger.new(STDOUT)
 		@w = 640 / 8
 		@h = 480 / 8
+
+    # TODO put into config
+    # TODO actually, start using config first
+    @colors = {
+      :red    => {:c => 0xAD3333, :i => 0},
+      :green  => {:c => 0x5CE65C, :i => 1},
+      :yellow => {:c => 0xFFF666, :i => 2},
+      :blue   => {:c => 0x3366FF, :i => 3},
+      :purple => {:c => 0xFF70B8, :i => 4},
+      :orange => {:c => 0xFFC266, :i => 5}
+    }
+
     mode = :snake # or :tron
-    
-		snakes.push(Snake.new(8, 8, 123456, "Clyde", mode, @w, @h))  
-		snakes.push(Snake.new(40, 40, 98765,   "Pinky",  mode, @w, @h))
-		snakes.push(Snake.new(15, 15, 8000000, "Blinky", mode, @w, @h))
-		snakes.push(Snake.new(60, 15, 4324324, "Inky",   mode, @w, @h))
+
+		snakes.push(Snake.new(8, 8,   :green,  "Clyde",  mode, @w, @h))  
+		snakes.push(Snake.new(40, 40, :red,    "Pinky",  mode, @w, @h))
+		snakes.push(Snake.new(15, 15, :blue,   "Blinky", mode, @w, @h))
+		snakes.push(Snake.new(60, 15, :yellow, "Inky",   mode, @w, @h))
     
     snakes.each do |snake|
       @slots.push Slot.new(ClientProxy.new, snake)
