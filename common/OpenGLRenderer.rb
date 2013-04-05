@@ -20,8 +20,6 @@ class Renderer
     @w          = 640 / @scale
     @h          = 480 / @scale
     @mousePosition = [0,0]
-    @numFrames = 0
-    @startTime = SDL.getTicks
     
     # TODO dupe. put into config or somewhere else
     @colors = {
@@ -38,7 +36,10 @@ class Renderer
     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
     SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
     glViewport(0,0,@w * @scale, @h * @scale)
+
+    @numFrames = 0
     @baseTime = SDL.getTicks
+    puts "startTime #{@baseTime}"
 
 
     
@@ -193,7 +194,8 @@ class Renderer
   end
   
   def current_fps
-        return ((@numFrames/(SDL.getTicks - @startTime) )*1000).to_f
+    # puts "#{@numFrames}/#{SDL.getTicks} - #{@baseTime}"
+    return ((@numFrames/(SDL.getTicks - @baseTime) )*1000).to_f
   end
     
   def draw_rect x, y, w, h, c
