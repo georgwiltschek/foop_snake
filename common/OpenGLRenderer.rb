@@ -1,6 +1,39 @@
+require 'opengl'
+require 'gl'
+require 'mathn'
+include Gl,Glu,Glut
+
+require "#{File.dirname(__FILE__)}/../common/Shader"
+
+LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
+RED = [0.8, 0.1, 0.0, 1.0]
+
+ImageWidth = 20
+ImageHeight = 20
+$image = []
+$texName = []
+
 class Renderer
   
   def initialize
+    @scale      = 8
+    @w          = 640 / @scale
+    @h          = 480 / @scale
+    @mousePosition = [0,0]
+    @numFrames = 0
+    @startTime = SDL.getTicks
+    
+    # TODO dupe. put into config or somewhere else
+    @colors = {
+      :red    => {:c => 0xAD3333, :i => 0},
+      :green  => {:c => 0x5CE65C, :i => 1},
+      :yellow => {:c => 0xFFF666, :i => 2},
+      :blue   => {:c => 0x3366FF, :i => 3},
+      :purple => {:c => 0xFF70B8, :i => 4},
+      :orange => {:c => 0xFFC266, :i => 5},
+      :white  => {:c => 0xFFFFFF, :i => 6}
+    }
+    
     SDL.init(SDL::INIT_VIDEO)
     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
     SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
@@ -55,7 +88,7 @@ class Renderer
     
   end
   
-  def gl_fill_rect x,y,w,h,rgb
+  def fill_rect x,y,w,h,rgb
 
     red = (rgb >> 16) & 0xff;
     green = (rgb >> 8) & 0xff;
@@ -116,30 +149,64 @@ class Renderer
       @background.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
       
       glTranslate 0,0,10
-      gl_fill_rect 0, 0, @h * @scale, @w * @scale, 0xFFFFFF
+      fill_rect 0, 0, @h * @scale, @w * @scale, 0xFFFFFF
       @background.unload
     glPopMatrix
+    
+    @trip.apply
+    @trip.set_uniform1f("time",realSec)
+    @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
+    @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
+    
 
     snakes.each do |snake|
+      first = true
       snake.get_tail.each do |t|
-        @trip.apply
-        @trip.set_uniform1f("time",realSec)
-        @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
-        @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
         
-        gl_fill_rect t.x * @scale, t.y * @scale, @scale, @scale,t.color
+        if first then
+          fill_rect t.x * @scale, t.y * @scale, @scale, @scale, @colors[t.color.to_sym][:c]
+          first = false
+        else
+          draw_rect t.x * @scale, t.y * @scale, @scale, @scale, @colors[t.color.to_sym][:c]
+        end
         
-        @trip.unload
       end
     end
+    
+    @trip.unload
+    
+    # draw rules
+    i = 0
+    (@colors.sort_by {|k, v| v[:i]}).each do | color |
+      fill_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
+      i += 1.5
+    end
+    
     
     glPopMatrix
     
     glRasterPos2d(10,20)
-      "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
-      # puts current_fps
+    "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
     
     SDL.GL_swap_buffers
+    @numFrames = @numFrames + 1
+  end
+  
+  def current_fps
+        return ((@numFrames/(SDL.getTicks - @startTime) )*1000).to_f
+  end
+    
+  def draw_rect x, y, w, h, c
+    
+    glPushMatrix
+    fill_rect x,y,w,h,c
+    @trip.unload
+    @background.apply
+    glTranslate 0,0,-10
+    fill_rect x+1,y+1,w-2,h-2,0x000000
+    @background.unload
+    @trip.apply
+    glPopMatrix
   end
   
   # Stolen texture creation code

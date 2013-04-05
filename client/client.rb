@@ -8,33 +8,24 @@ require 'socket'
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
 
+if (ARGV.include? "-opengl") then
+  require "#{File.dirname(__FILE__)}/../common/OpenGLRenderer"
+else
+  require "#{File.dirname(__FILE__)}/../common/SDLRenderer"
+end
+
 class Client
 
   # constructor
   def initialize(ip, port)
-    @scale      = 8
-    @w          = 640 / @scale
-    @h          = 480 / @scale
+
     @running    = false
     @log        = Logger.new(STDOUT)
     @serverip   = ip
     @serverport = port
 
-      # TODO dupe. put into config or somewhere else
-      @colors = {
-        :red    => {:c => 0xAD3333, :i => 0},
-        :green  => {:c => 0x5CE65C, :i => 1},
-        :yellow => {:c => 0xFFF666, :i => 2},
-        :blue   => {:c => 0x3366FF, :i => 3},
-        :purple => {:c => 0xFF70B8, :i => 4},
-        :orange => {:c => 0xFFC266, :i => 5},
-        :white  => {:c => 0xFFFFFF, :i => 6}
-      }
 
-    # SDL init
-    SDL.init SDL::INIT_VIDEO
-    @screen  = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
-    @BGCOLOR = @screen.format.mapRGB 0, 0, 0 # black background
+    @renderer = Renderer.new
   end
 
   def handle_input
@@ -70,30 +61,6 @@ class Client
     end
   end
 
-  # draws all the snakes
-  def draw snakes
-    @screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
-    snakes.each do |snake|
-      first = true
-      snake.get_tail.each do |t|
-        if first then
-          @screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
-          first = false
-        else
-          @screen.draw_rect t.x * @scale, t.y * @scale, 7, 7, @colors[t.color.to_sym][:c]
-        end
-      end
-    end
-
-    # draw rules
-    i = 0
-    (@colors.sort_by {|k, v| v[:i]}).each do | color |
-      @screen.draw_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
-      i += 1.5
-    end
-
-    @screen.flip    
-  end
 
   def connect_to_server
     @socket = TCPSocket.open(@serverip, @serverport)
@@ -131,6 +98,7 @@ class Client
     end
   end
 
+
   def run
     changed  = false
     @snakes  = Array.new
@@ -166,7 +134,7 @@ class Client
         get_update
       end
 
-      draw(@snakes)
+      @renderer.draw(@snakes)
     end
   end
 end
