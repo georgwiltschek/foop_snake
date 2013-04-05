@@ -79,10 +79,9 @@ class Client
 			end
 		end
 
+		# draw rules
 		i = 0
 		(@colors.sort_by {|k, v| v[:i]}).each do | color |
-			
-			@log.info "#{color[0].to_sym}"
 			@screen.fill_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
 			i += 1
 		end
