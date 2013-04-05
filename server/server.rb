@@ -88,9 +88,9 @@ class Server
           dc = 0
           @colors.each do | color |
             @colors[color[0].to_sym][:i] = rand(@colors.size * 50)
-            @log.info "rules change #{@colors.inspect}"
           end
           colors = @colors
+          @log.info "rules change #{@colors.inspect}"
         end
 
         # growth and stuff

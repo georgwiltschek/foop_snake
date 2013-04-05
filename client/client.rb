@@ -87,7 +87,6 @@ class Client
 		end
 
 		# draw rules
-		@screen.draw_rect 0, 0, @w * @scale, 8, 0x555555
 		i = 0
 		(@colors.sort_by {|k, v| v[:i]}).each do | color |
 			@screen.draw_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]

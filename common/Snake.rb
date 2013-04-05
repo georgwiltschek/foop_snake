@@ -105,7 +105,7 @@ class Snake
 						
 					else
 						# collision with other snake, eat & grow
-						@log.info "#{self.get_name}: collision with #{segment.snake.get_name} detected"
+						# @log.info "#{self.get_name}: collision with #{segment.snake.get_name} detected"
 						@grow = @grow + snake.remove_from_segment(segment)
 					end
 
@@ -117,19 +117,8 @@ class Snake
 					# head collisions
 					if @colors[snake.get_color.to_sym][:i] < @colors[self.get_color.to_sym][:i]
 						# checking snake eats checked snake
-						@log.info "#{self.get_name}: Omnomnomnom";
+						# @log.info "#{self.get_name}: Omnomnomnom";
 						@grow = @grow + snake.remove_from_segment(snake.get_tail.first)
-
-					elsif @colors[snake.get_color.to_sym][:i] > @colors[self.get_color.to_sym][:i]
-						# checking snake gets eaten by checked snake
-						# TODO this shouldn't need any implementation, since the other snake
-						# should catch the above condition, but somehow it doesn't work always
-						# :( #fixme
-						@log.info "#{self.get_name}: This snake will kill me! HALP!";
-
-					elsif snake.get_color == self.get_color
-						# checking snake and checked snake are the same color, nothing happens
-						@log.info "Hooray we're the same!";
 					end
 
 				end
