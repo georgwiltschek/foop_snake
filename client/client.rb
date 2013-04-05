@@ -78,10 +78,9 @@ class Client
 			snake.get_tail.each do |t|
 				if first then
 					@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
-					@screen.draw_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
 					first = false
 				else
-					@screen.draw_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
+					@screen.draw_rect t.x * @scale, t.y * @scale, 7, 7, @colors[t.color.to_sym][:c]
 				end
 			end
 		end

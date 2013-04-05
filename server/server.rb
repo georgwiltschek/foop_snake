@@ -46,7 +46,7 @@ class Server
     names      = ["Clyde", "Pinky", "Inky", "Blinky"]
     mode       = :snake # or :tron
 
-    (1..num_snakes).each do |n|
+    (0..num_snakes).each do |n|
       name = "#{names[n % names.size]}#{n}"
       x    = rand(@w)
       y    = rand(@h)
