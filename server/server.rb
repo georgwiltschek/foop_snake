@@ -91,6 +91,9 @@ class Server
           end
           colors = @colors
           @log.info "rules change #{@colors.inspect}"
+          snakes.each do |snake|
+            @log.info "#{snake.to_s} score: #{snake.score}"
+          end
         end
 
         # growth and stuff

@@ -1,5 +1,5 @@
 class Snake
-	attr_accessor :isDead
+	attr_accessor :isDead, :score
 
 	class Tail
 		attr_accessor :x, :y, :color, :snake, :isDead
@@ -37,6 +37,7 @@ class Snake
 		@w = w
 		@h = h
       	@isDead = false
+      	@score = 0
 
       	# TODO duplicate code, put in Config or elsewhere
       	# and retrieve from there
@@ -185,6 +186,7 @@ class Snake
 			if t != nil then
 				@tail.push(t)
 				@grow = @grow - 1
+				@score = @score + 1
 			end
 		end
 	end
