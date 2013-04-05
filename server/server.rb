@@ -27,6 +27,7 @@ class Server
     @slots = Array.new
 		@w = 640 / 8
 		@h = 480 / 8
+    @log = Logger.new(STDOUT)
 
     # TODO put into config
     # TODO actually, start using config first
@@ -45,7 +46,7 @@ class Server
     mode       = :snake # or :tron
 
     (1..num_snakes).each do |n|
-      name = "#{names[num_snakes % names.size]}#{n}"
+      name = "#{names[n % names.size]}#{n}"
       x    = rand(@w)
       y    = rand(@h)
       mode = :snake
@@ -63,25 +64,40 @@ class Server
   def run
     @server = TCPServer.open(9876)
     Thread.start { listen_for_clients }
-    
+
+    dc = 0    
 		t = Time.now
     while @running
 			d = (Time.now - t) * 1000 # elapsed time since last tick
 
 			# tick
 			if (d > 100) then
-				t = Time.now
-        # @log.info "tick"
-        
+				t      = Time.now
+        colors = nil
+        dc    += 1
+
         snakes = @slots.map {|s| s.snake}
       
         @slots.each do |slot|
           slot.direction = slot.client.get_last_input
         end
 
+        # rules change
+        if (dc > 100) then
+          dc = 0
+          @colors.each do | color |
+            @colors[color[0].to_sym][:i] = rand(@colors.size * 50)
+            @log.info "rules change #{@colors.inspect}"
+          end
+          colors = @colors
+        end
+
         # growth and stuff
         @slots.each do |slot|          
           slot.snake.update(d , slot.direction)
+          if colors != nil then
+            slot.snake.update_colors colors
+          end
         end
           
         @slots.each do |slot|

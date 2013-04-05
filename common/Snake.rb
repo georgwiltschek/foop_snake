@@ -167,11 +167,13 @@ class Snake
 		return total - @tail.length
 	end
 
+	def update_colors colors
+		@colors = colors
+	end
+
 	# update snake (i.e. stuff, that's not really movement, but also important.
 	# at the moment it does growth only)
 	def update delta, direction
-		# let the snake grow for a while
-
 		if @tail.length == 0 then
 			#die
 			@isDead = true;
@@ -179,7 +181,6 @@ class Snake
 		end
 
 		if @grow > 0 then
-
 			case direction
 				when :right
 					t = Tail.new(@tail.last.x - 1, @tail.last.y, @tail.last.color,self)
