@@ -2,7 +2,7 @@
 
 Snakes are controlled by up to four clients, AI takes over snakes not claimed by humans. Snakes can eat part of any other snakes, growing the number of segments behind the collision point. On Head-to-Head collisions, one snake kills the other snake depending on the color combination. The surviving snake grows the length of the killed snake.
 
-run with ```ruby server/server.rb```
+run with ```ruby server/server.rb [num_snaks]```
 
 connect clients with ```ruby client/client.rb```
 

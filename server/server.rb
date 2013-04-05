@@ -21,11 +21,10 @@ class Server
       
   end
   
-  def initialize
+  def initialize num_snakes
     snakes = Array.new
     #@lastInput = Array.new
     @slots = Array.new
-		@log = Logger.new(STDOUT)
 		@w = 640 / 8
 		@h = 480 / 8
 
@@ -42,7 +41,6 @@ class Server
 
     # generate snakes
     # TODO get all these from cmdline and/or config
-    num_snakes = 8
     names      = ["Clyde", "Pinky", "Inky", "Blinky"]
     mode       = :snake # or :tron
 
@@ -63,8 +61,6 @@ class Server
   
   
   def run
-    
-    
     @server = TCPServer.open(9876)
     Thread.start { listen_for_clients }
     
@@ -127,10 +123,17 @@ class Server
         return slot
       end
     end
-
   end
-  
 end
 
-server = Server.new
+# run server
+num_snakes = 4
+@log = Logger.new(STDOUT)
+
+if ARGV[0] != nil && ARGV[0].to_i > 0 then
+  num_snakes = ARGV[0]
+end
+
+@log.info "Starting server with #{num_snakes} snakes..."
+server = Server.new(num_snakes.to_i)
 server.run

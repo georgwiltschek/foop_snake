@@ -110,7 +110,6 @@ class Client
 			update.each do |snake|
 				s = Snake.new(0, 0, 0x000000, snake["name"], nil, 0, 0)
 				@snakes.push(s)
-				puts "new snalke"
 			end
 		end
 
