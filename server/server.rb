@@ -16,9 +16,9 @@ class Server
     end
     
     def to_s
-      return snake.name
+      return @snake.name
     end
-      
+
   end
   
   def initialize num_snakes
@@ -60,7 +60,7 @@ class Server
     @running = true
   end
   
-  
+  # main server loop
   def run
     @server = TCPServer.open(9876)
     Thread.start { listen_for_clients }
@@ -100,13 +100,14 @@ class Server
           end
         end
           
+        # movement
         @slots.each do |slot|
-          # movement
           if !slot.snake.isDead
             slot.snake.move(slot.direction, snakes)
           end
         end
 
+        # updates to clients
         @slots.each do |slot|
           slot.client.update(snakes)
         end
