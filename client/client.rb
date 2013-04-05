@@ -5,147 +5,273 @@ require 'logger'
 require 'rubygems'
 require 'json'
 require 'socket'
+require 'opengl'
+require 'gl'
+require 'mathn'
+include Gl,Glu,Glut
+
 
 require "#{File.dirname(__FILE__)}/../common/Snake"
+require "#{File.dirname(__FILE__)}/../common/Shader"
+
+ImageWidth = 20
+ImageHeight = 20
+$image = []
+$texName = []
+
+def makeImage
+	for i in 0...ImageWidth
+		ti = 2.0*Math::PI*i/ImageWidth.to_f
+		for j in 0...ImageHeight
+			tj = 2.0*Math::PI*j/ImageHeight.to_f
+
+			$image[3*(ImageHeight*i+j)] =  127*(1.0+Math::sin(ti))
+			$image[3*(ImageHeight*i+j)+1] =  127*(1.0+Math::cos(2*tj))
+			$image[3*(ImageHeight*i+j)+2] =  127*(1.0+Math::cos(ti+tj))
+		end
+	end
+end
+
+def makeStripeImage
+	for j in (0..ImageWidth)
+		$image[4*j] = if (j<=4) then 255 else 0 end
+		$image[4*j+1] = if (j>4) then 255 else 0 end
+		$image[4*j+2] = 0
+		$image[4*j+3] = 255
+	end
+end
+
+def makeCheckImages
+	for i in (0..ImageHeight-1)
+		for j in (0..ImageWidth-1)
+			if ((i&0x8==0)!=(j&0x8==0)) then tmp = 1 else tmp=0 end
+			#c = ((((i&0x8)==0)^((j&0x8))==0))*255
+			c = tmp * 255
+			$image[i*ImageWidth*4+j*4+0] = c
+			$image[i*ImageWidth*4+j*4+1] = c
+			$image[i*ImageWidth*4+j*4+2] = c
+			$image[i*ImageWidth*4+j*4+3] = 255
+			#c = ((((i&0x10)==0)^((j&0x10))==0))*255
+			if ((i&0x10==0)!=(j&0x10==0)) then tmp = 1 else tmp=0 end
+			c = tmp * 255
+			$image[i*ImageWidth*4+j*4+0] = c
+			$image[i*ImageWidth*4+j*4+1] = 0
+			$image[i*ImageWidth*4+j*4+2] = 0
+			$image[i*ImageWidth*4+j*4+3] = 255
+		end
+	end
+end
 
 class Client
 
-	# constructor
-	def initialize(ip, port)
-		@scale      = 8
-		@w          = 640 / @scale
-		@h          = 480 / @scale
-		@running    = false
-		@log        = Logger.new(STDOUT)
-		@serverip   = ip
-		@serverport = port
+	def initialize
+		@scale = 20
+		@w = 640 / 8
+		@h = 480 / 8
 
-	    # TODO dupe. put into config or somewhere else
-	    @colors = {
-	      :red    => {:c => 0xAD3333, :i => 0},
-	      :green  => {:c => 0x5CE65C, :i => 1},
-	      :yellow => {:c => 0xFFF666, :i => 2},
-	      :blue   => {:c => 0x3366FF, :i => 3},
-	      :purple => {:c => 0xFF70B8, :i => 4},
-	      :orange => {:c => 0xFFC266, :i => 5},
-	      :white  => {:c => 0xFFFFFF, :i => 6}
-	    }
+    # SDL.init SDL::INIT_VIDEO
+    #     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
+    # 
+    # @screen   = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::OPENGL
+    #     # @BGCOLOR = @screen.format.mapRGB 0, 0, 0
+    
+    SDL.init(SDL::INIT_VIDEO)
+    SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
+    SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
+    glViewport(0,0,@w * @scale, @h * @scale)
+    
+    GL.ClearColor(0.0, 0.0, 0.0, 0.0)
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+    glOrtho(0, @w * @scale, @h * @scale, 0, 1, -1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity()
+    
 
-		# SDL init
-		SDL.init SDL::INIT_VIDEO
-		@screen  = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE
-		@BGCOLOR = @screen.format.mapRGB 0, 0, 0 # black background
+    # texture stuff?
+    # makeImage
+    # makeStripeImage
+    makeCheckImages
+    
+  	$texName = glGenTextures(1)
+  	glBindTexture(GL_TEXTURE_2D, $texName[0])
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
+  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+  	glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
+  		GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
+  	glEnable(GL_TEXTURE_2D)
+    
+
+		@log = Logger.new(STDOUT)
+
+		@running = false
+    
+    # and now... the shaders
+    @shiny = Shader.new('shiny')
+    @velvet = Shader.new('velvet')
+    @hblur = Shader.new('hblur')
 	end
 
 	def handle_input
 		event = SDL::Event2.poll
 
 		case event
-			# quit
+
 			when SDL::Event2::Quit
 				@running = false
-				return
 
-			# other keys
 			when SDL::Event2::KeyDown
+
 				case event.sym
-					# quit via escape
+
 					when SDL::Key::ESCAPE
 						@running = false
-						return
 
-					# directions
 					when SDL::Key::LEFT
 						direction = :left
+
 					when SDL::Key::RIGHT
 						direction = :right
+
 					when SDL::Key::UP
 						direction = :up
+
 					when SDL::Key::DOWN
 						direction = :down
 
 				@log.info "Key Event: #{event.sym} #{direction}"
 				return direction
+
 			end
+			
 		end
+
 	end
 
 	# draws all the snakes
 	def draw snakes
-		@screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
-		snakes.each do |snake|
-			first = true
-			snake.get_tail.each do |t|
-				if first then
-					@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
-					first = false
-				else
-					@screen.draw_rect t.x * @scale, t.y * @scale, 7, 7, @colors[t.color.to_sym][:c]
-				end
-			end
-		end
-
-		# draw rules
-		i = 0
-		(@colors.sort_by {|k, v| v[:i]}).each do | color |
-			@screen.draw_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
-			i += 1.5
-		end
-
-		@screen.flip    
-	end
-
-	def connect_to_server
-		@socket = TCPSocket.open(@serverip, @serverport)
+    draw_opengl snakes
+		# TODO maybe check the SDL documentation, since the game tends
+		# to stop redrawing after a while
+    # @screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
+    # 
+    # snakes.each do |snake|
+    #   snake.get_tail.each do |t|
+    #     @screen.fill_rect t.x * @scale, t.y * @scale, 8, 8,t.color
+    #   end
+    # end
+    # 
+    # @screen.flip  
 	end
   
-  	# send the direction to the sierver
-	def send_direction(direction)
-		package = {"direction"  => direction}
-		jsonPackage = JSON.dump(package)
-		p jsonPackage
-		@socket.puts(jsonPackage)
-	end
+  def gl_fill_rect x,y,w,h,rgb
+
+    red = (rgb >> 16) & 0xff;
+    green = (rgb >> 8) & 0xff;
+    blue = (rgb >> 0) & 0xff;
+
+    red = red/255.0
+    green = green/255.0
+    blue = blue/255.0
+
+    # puts "#{red} #{green} #{blue}"
+    glColor red, green, blue
+  	glBindTexture(GL_TEXTURE_2D, $texName[0])
+
+
+    glBegin Gl::GL_POLYGON
+      glNormal3f( 0.0,  0.0,  1.0)
+      glTexCoord2f(0.0, 1.0)
+      # glColor3f( 1.0, 0.0, 0.0 )
+    	glVertex2f( x, y )
+      glTexCoord2f(1.0, 1.0)
+      # glColor3f( 0.0, 1.0, 0.0 )
+    	glVertex2f( x,  y+h )
+      glTexCoord2f(1.0, 0.0)
+      # glColor3f( 0.0, 0.0, 1.0 )
+    	glVertex2f(  x+h,  y+h )
+      glTexCoord2f(0.0, 0.0)
+      # glColor3f( 1.0, 0.0, 1.0 )
+    	glVertex2f(  x+h, y )
+  	glEnd
+    
+  end
   
-	# gets game state from server
-	def get_update
-		line = @socket.gets.chop
+  def draw_opengl snakes
+    puts "draw"
+    GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
+    # GL.MatrixMode(GL::PROJECTION)
+    GL.LoadIdentity()
+    # perspective(projectionmatrix, 45.0, 1.0, 0.1, 100.0)
+    # gl_fill_rect 0,0,100,100, 0
+    
+    # @hblur.apply
+    # @shiny.apply
+    # @velvet.apply
+    snakes.each do |snake|
+      snake.get_tail.each do |t|
+        gl_fill_rect t.x * @scale, t.y * @scale, @scale, @scale,t.color
+      end
+    end
+    
+    
+    SDL.GL_swap_buffers
+  end
 
-		die "connection lost" if !line
-		
-		update_snakes JSON.parse(line)
-	end
+  def connect_to_server
+    @socket = TCPSocket.open("localhost", 9876)
+  end
+  
+  def send_direction(direction)
+    package = {"direction"  => direction}
+    jsonPackage = JSON.dump(package)
+    # p package
+    p jsonPackage
+    @socket.puts(jsonPackage)
+  end
+  
+  def get_update
+    line = @socket.gets.chop
+    die "connection lost" if !line
+    
+    json = JSON.parse(line)
+    # p json
+    
+    update_snakes json
+  end
 
-	# update each snake
-	def update_snakes update
-		# on client start, create all the local snakes from the first update
-		if @snakes.size == 0 then
-			update.each do |snake|
-				s = Snake.new(0, 0, 0x000000, snake["name"], nil, 0, 0)
-				@snakes.push(s)
-			end
-		end
-
-		update.each do |snake|
-			@snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
-		end
-	end
+  def update_snakes update
+    update.each do |snake|
+      # p snake
+      @snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
+    end
+  end
 
 	def run
-		changed  = false
-		@snakes  = Array.new
-		@running = true
-		lastdir  = nil
+		@snakes = Array.new
 
-		die "can't connect to server" unless connect_to_server
+		@snakes.push(Snake.new(8, 8, 123456, "Clyde", nil, @w, @h))  
+		@snakes.push(Snake.new(40, 40, 98765,   "Pinky",  nil, @w, @h))
+		@snakes.push(Snake.new(15, 15, 8000000, "Blinky", nil, @w, @h))
+		@snakes.push(Snake.new(60, 15, 4324324, "Inky",   nil, @w, @h))
+
+    die "can't connect to server" unless connect_to_server
+
+    	changed = false
+
+		@running = true
+		lastdir = nil
 
 		t = Time.now
-
-		# main game loop
+		# main loop
 		while @running
 			d = (Time.now - t) * 1000 # elapsed time since last tick
 
-			# get direction changes from input handler
+			# this should be sent to the server
 			direction = handle_input
 			if direction != nil then
 				changed = lastdir != direction
@@ -155,22 +281,21 @@ class Client
 			# tick
 			if (d > 10) then
 				t = Time.now
+		        # @log.info "tick"
 
-				# send direction if changed
-				if changed
-					send_direction(dir)
-					changed = false
-				end
+		        if changed
+		        	send_direction(dir)
+		        	changed = false
+		        end
 
-				# get updated gamestate from server
-				get_update
-			end
-
-			draw(@snakes)
+		    	get_update
+	    	end
+					
+		    draw(@snakes)
 		end
 	end
 end
 
 # create and run new client
-c = Client.new("localhost", 9876)
+c = Client.new
 c.run
