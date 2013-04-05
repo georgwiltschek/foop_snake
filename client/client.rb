@@ -14,6 +14,9 @@ include Gl,Glu,Glut
 require "#{File.dirname(__FILE__)}/../common/Snake"
 require "#{File.dirname(__FILE__)}/../common/Shader"
 
+LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
+RED = [0.8, 0.1, 0.0, 1.0]
+
 ImageWidth = 20
 ImageHeight = 20
 $image = []
@@ -79,13 +82,16 @@ class Client
     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
     SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
     glViewport(0,0,@w * @scale, @h * @scale)
+    @baseTime = SDL.getTicks
+
+
     
     GL.ClearColor(0.0, 0.0, 0.0, 0.0)
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     
-    glOrtho(0, @w * @scale, @h * @scale, 0, 1, -1);
+    glOrtho(0, @w * @scale, @h * @scale, 0, 1000.0, -1000.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity()
     
@@ -103,17 +109,25 @@ class Client
   	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
   	glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
   		GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
-  	glEnable(GL_TEXTURE_2D)
+    # glEnable(GL_TEXTURE_2D)
     
+    GL.Enable(GL::DEPTH_TEST)
+    GL.Enable(GL::CULL_FACE)
+    GL.Enable(GL::LIGHTING)
+    GL.Lightfv(GL::LIGHT0, GL::POSITION, LIGHT_POS)
+    GL.Enable(GL::LIGHT0)
+    GL.ShadeModel(GL::SMOOTH)
+    GL.Enable(GL::NORMALIZE)
 
 		@log = Logger.new(STDOUT)
 
 		@running = false
-    
+    @r = 0
     # and now... the shaders
     @shiny = Shader.new('shiny')
     @velvet = Shader.new('velvet')
     @hblur = Shader.new('hblur')
+    @background = Shader.new('background')
 	end
 
 	def handle_input
@@ -180,21 +194,30 @@ class Client
 
     # puts "#{red} #{green} #{blue}"
     glColor red, green, blue
-  	glBindTexture(GL_TEXTURE_2D, $texName[0])
+    # glBindTexture(GL_TEXTURE_2D, $texName[0])
+    
+    GL.Material(GL::FRONT, GL::AMBIENT_AND_DIFFUSE, [red, green, blue])
+    GL.Material(GL::FRONT, GL::SPECULAR, [1.0, 1.0, 1.0]);
+    GL.Material(GL::FRONT, GL::SHININESS, [50]);
+    
+    # GL.Material(GL::BACK, GL::AMBIENT_AND_DIFFUSE, [red, green, blue])
+    # GL.Material(GL::BACK, GL::SPECULAR, [1.0, 1.0, 1.0]);
+    # GL.Material(GL::BACK, GL::SHININESS, [50]);
 
 
     glBegin Gl::GL_POLYGON
+    
       glNormal3f( 0.0,  0.0,  1.0)
-      glTexCoord2f(0.0, 1.0)
+      # glTexCoord2f(0.0, 1.0)
       # glColor3f( 1.0, 0.0, 0.0 )
     	glVertex2f( x, y )
-      glTexCoord2f(1.0, 1.0)
+      # glTexCoord2f(1.0, 1.0)
       # glColor3f( 0.0, 1.0, 0.0 )
     	glVertex2f( x,  y+h )
-      glTexCoord2f(1.0, 0.0)
+      # glTexCoord2f(1.0, 0.0)
       # glColor3f( 0.0, 0.0, 1.0 )
     	glVertex2f(  x+h,  y+h )
-      glTexCoord2f(0.0, 0.0)
+      # glTexCoord2f(0.0, 0.0)
       # glColor3f( 1.0, 0.0, 1.0 )
     	glVertex2f(  x+h, y )
   	glEnd
@@ -202,13 +225,29 @@ class Client
   end
   
   def draw_opengl snakes
-    puts "draw"
+  	realSec = (SDL.getTicks - @baseTime) / 1000.0
+
+    puts "draw #{@r} #{realSec}"
     GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
     # GL.MatrixMode(GL::PROJECTION)
     GL.LoadIdentity()
     # perspective(projectionmatrix, 45.0, 1.0, 0.1, 100.0)
     # gl_fill_rect 0,0,100,100, 0
     
+    #wohooo
+    @r = @r + 1
+    glPushMatrix
+    # glRotate @r, 0.0, 1.0, 0.0
+    glPushMatrix
+      @background.apply
+      @background.set_uniform1f("time",realSec)
+      @background.set_uniform2f("resolution",@h * @scale, @w * @scale)
+      @background.set_uniform2f("mouse",0,0)
+      
+      glTranslate 0,0,10
+      gl_fill_rect 0, 0, @h * @scale, @w * @scale, 0xFFFFFF
+      @background.unload
+    glPopMatrix
     # @hblur.apply
     # @shiny.apply
     # @velvet.apply
@@ -218,6 +257,7 @@ class Client
       end
     end
     
+    glPopMatrix
     
     SDL.GL_swap_buffers
   end

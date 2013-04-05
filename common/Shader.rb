@@ -38,4 +38,38 @@ class Shader
   def apply
     GL.UseProgram(@shaderProgram) if @shaderProgram
   end
+  
+  def unload
+    GL.UseProgram(0)
+  end
+  
+  def set_uniform1i(name, i)
+    p i
+    if (@shaderProgram) then
+      id = GL.GetUniformLocation(@shaderProgram, name);
+      GL.Uniform1i(id,i) if (id != -1)
+    end
+  end
+  
+  def set_uniform1f(name, v)
+    if (@shaderProgram) then
+      id = GL.GetUniformLocation(@shaderProgram, name);
+      GL.Uniform1f(id,v) if (id != -1)
+    end
+  end
+  
+  def set_uniform1fv(name, fv, size)
+    if (@shaderProgram) then
+      id = GL.GetUniformLocation(@shaderProgram, name);
+      GL.Uniform1fv(id,size,fv) if (id != -1)
+    end
+  end
+  
+  def set_uniform2f(name, x, y)
+    if (@shaderProgram) then
+      id = GL.GetUniformLocation(@shaderProgram, name);
+      GL.Uniform2f(id,x,y) if (id != -1)
+    end
+  end
+  
 end
