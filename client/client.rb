@@ -27,7 +27,8 @@ class Client
 	      :yellow => {:c => 0xFFF666, :i => 2},
 	      :blue   => {:c => 0x3366FF, :i => 3},
 	      :purple => {:c => 0xFF70B8, :i => 4},
-	      :orange => {:c => 0xFFC266, :i => 5}
+	      :orange => {:c => 0xFFC266, :i => 5},
+	      :white  => {:c => 0xFFFFFF, :i => 6}
 	    }
 
 		# SDL init
@@ -72,18 +73,25 @@ class Client
 	# draws all the snakes
 	def draw snakes
 		@screen.fill_rect 0, 0, @w * @scale, @h * @scale, @BGCOLOR
-
 		snakes.each do |snake|
+			first = true
 			snake.get_tail.each do |t|
-				@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
+				if first then
+					@screen.fill_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
+					@screen.draw_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
+					first = false
+				else
+					@screen.draw_rect t.x * @scale, t.y * @scale, 8, 8, @colors[t.color.to_sym][:c]
+				end
 			end
 		end
 
 		# draw rules
+		@screen.draw_rect 0, 0, @w * @scale, 8, 0x555555
 		i = 0
 		(@colors.sort_by {|k, v| v[:i]}).each do | color |
-			@screen.fill_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
-			i += 1
+			@screen.draw_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
+			i += 1.5
 		end
 
 		@screen.flip    

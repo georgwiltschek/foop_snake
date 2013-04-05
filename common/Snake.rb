@@ -46,7 +46,8 @@ class Snake
 			:yellow => {:c => 0xFFF666, :i => 2},
 			:blue   => {:c => 0x3366FF, :i => 3},
 			:purple => {:c => 0xFF70B8, :i => 4},
-			:orange => {:c => 0xFFC266, :i => 5}
+			:orange => {:c => 0xFFC266, :i => 5},
+			:white  => {:c => 0xFFFFFF, :i => 6}
 		}
 
 		# initial growth
