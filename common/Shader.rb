@@ -10,7 +10,7 @@ class Shader
 
     # Load shader source into the shaders
     
-    vshPath = File.join(File.dirname(__FILE__),"#{shader_base_file_name}.vsh")
+    vshPath = "./common/#{shader_base_file_name}.vsh"
 
     if File.exists?(vshPath) then 
       GL.ShaderSource(glsl_vertex_shader,File.read(vshPath))
@@ -19,8 +19,7 @@ class Shader
     end
                                         
     GL.ShaderSource(glsl_fragment_shader, 
-                    File.read(File.join(File.dirname(__FILE__), 
-                                        "#{shader_base_file_name}.fsh")))
+                    File.read("./common/#{shader_base_file_name}.fsh"))
 
     # Compile shaders
     GL.CompileShader(glsl_vertex_shader)

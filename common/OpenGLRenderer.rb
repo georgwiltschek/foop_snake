@@ -3,7 +3,7 @@ require 'gl'
 require 'mathn'
 include Gl,Glu,Glut
 
-require "#{File.dirname(__FILE__)}/../common/Shader"
+require "./common/Shader"
 
 LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
 RED = [0.8, 0.1, 0.0, 1.0]
@@ -41,8 +41,7 @@ class Renderer
     @baseTime = SDL.getTicks
     puts "startTime #{@baseTime}"
 
-
-    
+    glutInit()
     GL.ClearColor(0.0, 0.0, 0.0, 0.0)
     
     glMatrixMode(GL_PROJECTION);
@@ -51,8 +50,7 @@ class Renderer
     glOrtho(0, @w * @scale, @h * @scale, 0, 1000.0, -1000.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity()
-    
-
+  
     # texture stuff?
     # makeImage
     # makeStripeImage
@@ -84,7 +82,7 @@ class Renderer
     # @shiny = Shader.new('shiny')
     # @velvet = Shader.new('velvet')
     # @hblur = Shader.new('hblur')
-    @backgroundList = [Shader.new('balls'), Shader.new('space'), Shader.new('background'))]
+    @backgroundList = [Shader.new('balls'), Shader.new('space'), Shader.new('background')]
     @background = @backgroundList.first
     @trip = Shader.new('trip')
     
@@ -157,10 +155,10 @@ class Renderer
       @background.unload
     glPopMatrix
     
-    @trip.apply
-    @trip.set_uniform1f("time",realSec)
-    @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
-    @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
+    #@trip.apply
+    #@trip.set_uniform1f("time",realSec)
+    #@trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
+    #@#trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
     
 
     snakes.each do |snake|
@@ -190,6 +188,7 @@ class Renderer
     glPopMatrix
     
     glRasterPos2d(10,20)
+
     "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
     
     SDL.GL_swap_buffers

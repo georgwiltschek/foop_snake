@@ -1,8 +1,8 @@
 #! /usr/bin/ruby -w
 
+require 'rubygems'
 require 'sdl'
 require 'logger'
-require 'rubygems'
 require 'json'
 require 'socket'
 
