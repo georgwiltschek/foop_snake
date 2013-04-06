@@ -84,7 +84,7 @@ class Renderer
     # @shiny = Shader.new('shiny')
     # @velvet = Shader.new('velvet')
     # @hblur = Shader.new('hblur')
-    @backgroundList = [Shader.new('space'), Shader.new('background'), Shader.new('clouds')]
+    @backgroundList = [Shader.new('balls'), Shader.new('space'), Shader.new('background'))]
     @background = @backgroundList.first
     @trip = Shader.new('trip')
     
