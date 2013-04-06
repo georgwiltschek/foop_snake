@@ -1,9 +1,8 @@
 require 'opengl'
 require 'gl'
 require 'mathn'
-include Gl, Glu, Glut
-
 require "./common/Shader"
+include Gl, Glu, Glut
 
 LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
 RED = [0.8, 0.1, 0.0, 1.0]
@@ -13,17 +12,18 @@ ImageHeight = 20
 $image = []
 $texName = []
 
+# not so simple opengl based renderer. with shaders and stuff! :)
 class Renderer
   
   def initialize
     @scale  = Settings.scale
     @w      = Settings.w
     @h      = Settings.h
+    @colors = Settings.colors
+    @log    = Logger.new(STDOUT)
 
     @mousePosition = [0,0]
 
-    @colors = Settings.colors
-    
     SDL.init(SDL::INIT_VIDEO)
     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
     SDL.setVideoMode(@w * @scale, @h * @scale,32,SDL::OPENGL | SDL::GL_DOUBLEBUFFER | SDL::HWSURFACE)
@@ -31,31 +31,31 @@ class Renderer
 
     @numFrames = 0
     @baseTime = SDL.getTicks
-    puts "startTime #{@baseTime}"
+    @log.info "startTime #{@baseTime}"
 
     glutInit()
     GL.ClearColor(0.0, 0.0, 0.0, 0.0)
-    
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    
+
     glOrtho(0, @w * @scale, @h * @scale, 0, 1000.0, -1000.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity()
-  
+
     # texture stuff?
     # makeImage
     # makeStripeImage
     makeCheckImages
-    
-  	$texName = glGenTextures(1)
-  	glBindTexture(GL_TEXTURE_2D, $texName[0])
-  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
-  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
-  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
-  	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
-  	glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
-  		GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
+
+    $texName = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, $texName[0])
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
+    GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
     # glEnable(GL_TEXTURE_2D)
     
     GL.Enable(GL::DEPTH_TEST)
@@ -66,9 +66,7 @@ class Renderer
     GL.ShadeModel(GL::SMOOTH)
     GL.Enable(GL::NORMALIZE)
 
-		@log = Logger.new(STDOUT)
-
-		@running = false
+    @running = false
     @r = 0
     # and now... the shaders
     # @shiny = Shader.new('shiny')
@@ -76,12 +74,10 @@ class Renderer
     # @hblur = Shader.new('hblur')
     @backgroundList = [Shader.new('balls'), Shader.new('space'), Shader.new('background')]
     @background = @backgroundList.first
-    @trip = Shader.new('trip')
-    
+    @trip = Shader.new('trip')  
   end
   
   def fill_rect x,y,w,h,rgb
-
     red = (rgb >> 16) & 0xff;
     green = (rgb >> 8) & 0xff;
     blue = (rgb >> 0) & 0xff;
@@ -89,8 +85,6 @@ class Renderer
     red = red/255.0
     green = green/255.0
     blue = blue/255.0
-
-    # puts "#{red} #{green} #{blue}"
     glColor red, green, blue
     # glBindTexture(GL_TEXTURE_2D, $texName[0])
     
@@ -102,41 +96,37 @@ class Renderer
     # GL.Material(GL::BACK, GL::SPECULAR, [1.0, 1.0, 1.0]);
     # GL.Material(GL::BACK, GL::SHININESS, [50]);
 
-
-    glBegin Gl::GL_POLYGON
-    
+    glBegin Gl::GL_POLYGON    
       glNormal3f( 0.0,  0.0,  1.0)
       # glTexCoord2f(0.0, 1.0)
       # glColor3f( 1.0, 0.0, 0.0 )
-    	glVertex2f( x, y )
+      glVertex2f( x, y )
       # glTexCoord2f(1.0, 1.0)
       # glColor3f( 0.0, 1.0, 0.0 )
-    	glVertex2f( x,  y+h )
+      glVertex2f( x,  y+h )
       # glTexCoord2f(1.0, 0.0)
       # glColor3f( 0.0, 0.0, 1.0 )
-    	glVertex2f(  x+h,  y+h )
+      glVertex2f(  x+h,  y+h )
       # glTexCoord2f(0.0, 0.0)
       # glColor3f( 1.0, 0.0, 1.0 )
-    	glVertex2f(  x+h, y )
-  	glEnd
-    
+      glVertex2f(  x+h, y )
+    glEnd
   end
   
   def draw snakes
-  	realSec = (SDL.getTicks - @baseTime) / 1000.0
+    realSec = (SDL.getTicks - @baseTime) / 1000.0
 
-    # puts "draw #{@r} #{realSec}"
     GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
     # GL.MatrixMode(GL::PROJECTION)
     GL.LoadIdentity()
-    
+
     #wohooo
     @r = @r + 1
     glPushMatrix
 
     glPushMatrix
       @background = @backgroundList[(@numFrames%3000)/1000]
-    
+
       @background.apply
       @background.set_uniform1f("time",realSec)
       @background.set_uniform2f("resolution",@h * @scale, @w * @scale)
@@ -152,18 +142,15 @@ class Renderer
     #@trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
     #@#trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
     
-
     snakes.each do |snake|
       first = true
       snake.get_tail.each do |t|
-        
         if first then
-          fill_rect t.x * @scale, t.y * @scale, @scale, @scale, @colors[t.color.to_sym][:c]
+          fill_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
           first = false
         else
-          draw_rect t.x * @scale, t.y * @scale, @scale, @scale, @colors[t.color.to_sym][:c]
+          draw_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
         end
-        
       end
     end
     
@@ -172,7 +159,7 @@ class Renderer
     # draw rules
     i = 0
     (@colors.sort_by {|k, v| v[:i]}).each do | color |
-      fill_rect i * @scale, 0 * @scale, 8, 8, @colors[color[0].to_sym][:c]
+      fill_rect i * @scale, 0 * @scale, @scale, @scale, @colors[color[0].to_sym][:c]
       i += 1.5
     end
     
@@ -188,12 +175,10 @@ class Renderer
   end
   
   def current_fps
-    # puts "#{@numFrames}/#{SDL.getTicks} - #{@baseTime}"
     return ((@numFrames/(SDL.getTicks - @baseTime) )*1000).to_f
   end
     
-  def draw_rect x, y, w, h, c
-    
+  def draw_rect x, y, w, h, c    
     glPushMatrix
     fill_rect x,y,w,h,c
     @trip.unload
@@ -207,24 +192,24 @@ class Renderer
   
   # Stolen texture creation code
   def makeImage
-  	for i in 0...ImageWidth
-  		ti = 2.0*Math::PI*i/ImageWidth.to_f
-  		for j in 0...ImageHeight
-  			tj = 2.0*Math::PI*j/ImageHeight.to_f
+    for i in 0...ImageWidth
+      ti = 2.0*Math::PI*i/ImageWidth.to_f
+      for j in 0...ImageHeight
+        tj = 2.0*Math::PI*j/ImageHeight.to_f
 
-  			$image[3*(ImageHeight*i+j)] =  127*(1.0+Math::sin(ti))
-  			$image[3*(ImageHeight*i+j)+1] =  127*(1.0+Math::cos(2*tj))
-  			$image[3*(ImageHeight*i+j)+2] =  127*(1.0+Math::cos(ti+tj))
-  		end
-  	end
+        $image[3 * (ImageHeight * i + j)]   =  127*(1.0 + Math::sin(ti))
+        $image[3 * (ImageHeight * i + j) +1] =  127*(1.0 + Math::cos(2*tj))
+        $image[3 * (ImageHeight * i + j) +2] =  127*(1.0 + Math::cos(ti+tj))
+      end
+    end
   end
 
   def makeStripeImage
   	for j in (0..ImageWidth)
-  		$image[4*j] = if (j<=4) then 255 else 0 end
-  		$image[4*j+1] = if (j>4) then 255 else 0 end
-  		$image[4*j+2] = 0
-  		$image[4*j+3] = 255
+  		$image[4 * j]     = if (j <= 4)  then 255 else 0 end
+  		$image[4 * j + 1] = if (j >  4)  then 255 else 0 end
+  		$image[4 * j + 2] = 0
+  		$image[4 * j + 3] = 255
   	end
   end
 
@@ -248,5 +233,4 @@ class Renderer
   		end
   	end
   end
-
 end

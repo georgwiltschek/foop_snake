@@ -1,5 +1,6 @@
 require "./common/Settings"
 
+# Simple SDL based, double buffered renderer
 class Renderer
   def initialize
     @scale  = Settings.scale
