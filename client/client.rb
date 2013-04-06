@@ -5,7 +5,6 @@ require 'sdl'
 require 'logger'
 require 'json'
 require 'socket'
-
 require "./common/Snake"
 
 if (ARGV.include? "-opengl") then
@@ -15,7 +14,6 @@ else
 end
 
 class Client
-
   # constructor
   def initialize(ip, port)
 
@@ -23,7 +21,6 @@ class Client
     @log        = Logger.new(STDOUT)
     @serverip   = ip
     @serverport = port
-
 
     @renderer = Renderer.new
   end
@@ -61,16 +58,15 @@ class Client
     end
   end
 
-
   def connect_to_server
     @socket = TCPSocket.open(@serverip, @serverport)
   end
   
-    # send the direction to the sierver
+  # send the direction to the sierver
   def send_direction(direction)
     package = {"direction"  => direction}
-    jsonPackage = JSON.dump(package)
-    p jsonPackage
+    puts jsonPackage = JSON.dump(package)
+    
     @socket.puts(jsonPackage)
   end
   
@@ -97,7 +93,6 @@ class Client
       @snakes.select { |s| snake["name"] == s.get_name}.map { |ss| ss.update_tail snake["tail"]}
     end
   end
-
 
   def run
     changed  = false
