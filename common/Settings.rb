@@ -3,12 +3,12 @@ module Settings
 
   attr_reader :host, :port, :colors, :w, :h, :scale
 
-  @host = "localhost"
-  @port = 9876
+  @host   = "localhost"
+  @port   = 9876
 
-  @scale      = 8
-  @w          = 640 / @scale
-  @h          = 480 / @scale
+  @scale  = 8
+  @w      = 640 / @scale
+  @h      = 480 / @scale
 
   @colors = {
     :red     => {:c => 0xAD3333, :i => 0},
