@@ -67,7 +67,7 @@ class Snake
 		newTail = JSON.parse(jsonTail)
 		
 		newTail.each do |o|
-			@tail.push(Tail.new(o['data']['x'],o['data']['y'],o['data']['color'],self))
+			@tail.push(Tail.new(o.x, o.y, o.color, self))
 		end
 	end
 

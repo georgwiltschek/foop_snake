@@ -2,8 +2,8 @@ require "rubygems"
 require "json"
 require "logger"
 require 'socket'
-require "#{File.dirname(__FILE__)}/client-proxy"
-require "#{File.dirname(__FILE__)}/../common/Snake"
+require "./server/client-proxy"
+require "./common/Snake"
 
 class Server
   

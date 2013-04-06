@@ -6,12 +6,12 @@ require 'rubygems'
 require 'json'
 require 'socket'
 
-require "#{File.dirname(__FILE__)}/../common/Snake"
+require "./common/Snake"
 
 if (ARGV.include? "-opengl") then
-  require "#{File.dirname(__FILE__)}/../common/OpenGLRenderer"
+  require "./common/OpenGLRenderer"
 else
-  require "#{File.dirname(__FILE__)}/../common/SDLRenderer"
+  require "./common/SDLRenderer"
 end
 
 class Client
