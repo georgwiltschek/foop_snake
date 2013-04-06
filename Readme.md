@@ -7,5 +7,6 @@ run with ```ruby server/server.rb [num_snakes]```
 connect clients with ```ruby client/client.rb```
 
 requirements:
+- ruby 1.9.* (maybe 1.9.3? maybe works with 1.8.*...)
 - rubysdl (Windows/Linux)
 - rsdl (OSX)
