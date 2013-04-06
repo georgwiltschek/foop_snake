@@ -7,6 +7,8 @@ require "./common/Snake"
 require "./common/Settings"
 
 class Server
+
+  # TODO remove dead snakes, maybe create new ones on new client connections
   
   class Slot
     attr_accessor :client, :snake, :direction
@@ -36,7 +38,6 @@ class Server
     @colors = Settings.colors
 
     # generate snakes
-    # TODO get all these from cmdline and/or config
     names      = ["Clyde", "Pinky", "Inky", "Blinky"]
     mode       = :snake # or :tron
 

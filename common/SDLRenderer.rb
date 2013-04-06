@@ -7,7 +7,7 @@ class Renderer
     @w      = Settings.w
     @h      = Settings.h
     @colors = Settings.colors
-    
+
     # SDL init
     SDL.init SDL::INIT_VIDEO
     @screen  = SDL::set_video_mode @w * @scale, @h * @scale, 24, SDL::SWSURFACE

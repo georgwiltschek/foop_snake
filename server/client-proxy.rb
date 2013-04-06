@@ -23,7 +23,7 @@ class ClientProxy
     end
   end
   
-  # here would be a good place for some magic :)
+  # TODO here would be a good place for some magic :)
   def get_last_input
     if !@client then
       case rand(4)

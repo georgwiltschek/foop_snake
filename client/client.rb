@@ -14,6 +14,10 @@ else
   require "./common/SDLRenderer"
 end
 
+# TODO show score
+# TODO know which snake belongs to the client (and highlight it in the renderer somehow)
+# TODO show death and other messages
+
 class Client
   # constructor
   def initialize(ip, port)
@@ -63,7 +67,7 @@ class Client
     @socket = TCPSocket.open(@serverip, @serverport)
   end
   
-  # send the direction to the sierver
+  # send the direction to the server
   def send_direction(direction)
     package = {"direction"  => direction}
     @log.info jsonPackage = JSON.dump(package)
@@ -128,6 +132,8 @@ class Client
 
         # get updated gamestate from server
         get_update
+
+        # TODO get updates for color order
       end
 
       @renderer.draw(@snakes)
