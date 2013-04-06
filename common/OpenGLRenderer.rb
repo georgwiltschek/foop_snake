@@ -197,7 +197,7 @@ class Renderer
       for j in 0...ImageHeight
         tj = 2.0*Math::PI*j/ImageHeight.to_f
 
-        $image[3 * (ImageHeight * i + j)]   =  127*(1.0 + Math::sin(ti))
+        $image[3 * (ImageHeight * i + j)]    =  127*(1.0 + Math::sin(ti))
         $image[3 * (ImageHeight * i + j) +1] =  127*(1.0 + Math::cos(2*tj))
         $image[3 * (ImageHeight * i + j) +2] =  127*(1.0 + Math::cos(ti+tj))
       end

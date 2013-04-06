@@ -20,7 +20,6 @@ class ClientProxy
       
       json = JSON.parse(line)
 
-
       if json["direction"] then
         @lastInput = json["direction"].to_sym
       end
@@ -28,6 +27,7 @@ class ClientProxy
     end
   end
   
+  # here would be a good place for some magic :)
   def get_last_input
     if !@client then
       case rand(4)
@@ -42,12 +42,10 @@ class ClientProxy
     
         when 3
             @lastInput = :down
-    
       end
     end
 
     return @lastInput
-
   end
 
   def update(snakes)
@@ -55,13 +53,12 @@ class ClientProxy
       begin
         stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-        # p stoneColdKilledSnakes
         @client.puts(stoneColdKilledSnakes)
       rescue Exception => myException
-         puts "Exception rescued : #{myException}"
-         @client = nil
-         @isBot = true
-       end
+        puts "Exception rescued : #{myException}"
+        @client = nil
+        @isBot = true
+      end
     end
   end
   
