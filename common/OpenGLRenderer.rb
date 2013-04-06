@@ -16,9 +16,9 @@ $texName = []
 class Renderer
   
   def initialize
-    @scale      = 8
-    @w          = 640 / @scale
-    @h          = 480 / @scale
+    @scale  = Settings.scale
+    @w      = Settings.w
+    @h      = Settings.h
 
     @mousePosition = [0,0]
 

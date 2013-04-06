@@ -3,9 +3,9 @@ class Renderer
 require "./common/Settings"
 
   def initialize
-    @scale      = 8
-    @w          = 640 / @scale
-    @h          = 480 / @scale
+    @scale      = Settings.scale
+    @w          = Settings.w
+    @h          = Settings.h
     
     @colors = Settings.colors
     

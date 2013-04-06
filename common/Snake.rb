@@ -29,17 +29,18 @@ class Snake
 
 	# Snake Constructor
 	def initialize x, y, color, name, mode, w, h
-		@log   = Logger.new(STDOUT)
-		@tail  = Array.new # the whole snake, despite the name :)
-		@mode  = mode
-		@pos_x = x
-		@pos_y = y
-		@color = color
-		@name  = name
-		@w = w
-		@h = h
+		@log    = Logger.new(STDOUT)
+		@tail   = Array.new # the whole snake, despite the name :)
+		@mode   = mode
+		@pos_x  = x
+		@pos_y  = y
+		@color  = color
+		@name   = name
+	    @scale  = Settings.scale
+    	@w      = Settings.w
+    	@h      = Settings.h
       	@isDead = false
-      	@score = 0
+      	@score  = 0
 
 		@colors = Settings.colors
 

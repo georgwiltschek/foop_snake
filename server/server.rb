@@ -26,10 +26,11 @@ class Server
     snakes = Array.new
     #@lastInput = Array.new
     @slots = Array.new
-    @w = 640 / 8
-    @h = 480 / 8
-    @w = 640 / 8
-    @h = 480 / 8
+
+    @scale      = Settings.scale
+    @w          = Settings.w
+    @h          = Settings.h
+
     @log = Logger.new(STDOUT)
 
     @colors = Settings.colors
