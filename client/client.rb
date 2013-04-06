@@ -66,7 +66,7 @@ class Client
   # send the direction to the sierver
   def send_direction(direction)
     package = {"direction"  => direction}
-    puts jsonPackage = JSON.dump(package)
+    @log.info jsonPackage = JSON.dump(package)
     
     @socket.puts(jsonPackage)
   end

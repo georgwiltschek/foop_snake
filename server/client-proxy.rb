@@ -1,19 +1,15 @@
+require 'logger'
+
 class ClientProxy
   attr_accessor :client, :lastInput, :isBot
   
   def initialize
     @isBot = true
+    @log = Logger.new(STDOUT)
   end
   
-  #stolen from rails
-  # def symbolize_keys myhash
-  #   myhash.keys.each do |key|
-  #     myhash[(key.to_sym rescue key) || key] = myhash.delete(key)
-  #   end
-  # end
-  
   def listen_for_input
-    puts "start listening"
+    @log.info "start listening"
     while true
       line = @client.gets.chop
       break if !line
@@ -33,13 +29,10 @@ class ClientProxy
       case rand(4)
         when 0
             @lastInput = :up
-    
         when 1
             @lastInput = :right
-    
         when 2
             @lastInput = :left
-    
         when 3
             @lastInput = :down
       end
@@ -55,7 +48,7 @@ class ClientProxy
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
         @client.puts(stoneColdKilledSnakes)
       rescue Exception => myException
-        puts "Exception rescued : #{myException}"
+        @log.info "Exception rescued : #{myException}"
         @client = nil
         @isBot = true
       end

@@ -121,9 +121,9 @@ class Server
       client = @server.accept
       Thread.start(client) do |client|
         # slot.listen_for_input
-        puts "new client connected"
+        @log.info "new client connected"
         slot = get_slot(client)
-        puts "client got slot " #+ @slots[i]
+        @log.info "client got slot " #+ @slots[i]
         slot.client.listen_for_input
       end
     end
@@ -131,7 +131,7 @@ class Server
   
   def get_slot(client)
     @slots.each do |slot|
-      puts "."
+      @log.info "."
       if slot.client.isBot == true then
         slot.client.isBot = false
         slot.client.client = client
