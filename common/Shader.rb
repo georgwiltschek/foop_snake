@@ -9,9 +9,15 @@ class Shader
     glsl_fragment_shader = GL.CreateShader(GL_FRAGMENT_SHADER)
 
     # Load shader source into the shaders
-    GL.ShaderSource(glsl_vertex_shader,
-                    File.read(File.join(File.dirname(__FILE__), 
-                                        "#{shader_base_file_name}.vsh")))
+    
+    vshPath = File.join(File.dirname(__FILE__),"#{shader_base_file_name}.vsh")
+
+    if File.exists?(vshPath) then 
+      GL.ShaderSource(glsl_vertex_shader,File.read(vshPath))
+    else
+      GL.ShaderSource(glsl_vertex_shader,"attribute vec4 pos; void main() { gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; }")
+    end
+                                        
     GL.ShaderSource(glsl_fragment_shader, 
                     File.read(File.join(File.dirname(__FILE__), 
                                         "#{shader_base_file_name}.fsh")))

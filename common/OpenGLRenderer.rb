@@ -81,10 +81,11 @@ class Renderer
 		@running = false
     @r = 0
     # and now... the shaders
-    @shiny = Shader.new('shiny')
-    @velvet = Shader.new('velvet')
-    @hblur = Shader.new('hblur')
-    @background = Shader.new('background')
+    # @shiny = Shader.new('shiny')
+    # @velvet = Shader.new('velvet')
+    # @hblur = Shader.new('hblur')
+    @backgroundList = [Shader.new('space'), Shader.new('background'), Shader.new('clouds')]
+    @background = @backgroundList.first
     @trip = Shader.new('trip')
     
   end
@@ -144,6 +145,8 @@ class Renderer
     glPushMatrix
 
     glPushMatrix
+      @background = @backgroundList[(@numFrames%3000)/1000]
+    
       @background.apply
       @background.set_uniform1f("time",realSec)
       @background.set_uniform2f("resolution",@h * @scale, @w * @scale)
