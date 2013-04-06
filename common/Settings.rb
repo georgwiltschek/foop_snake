@@ -21,5 +21,4 @@ module Settings
     :grey    => {:c => 0x888888, :i => 7},
     :magenta => {:c => 0xca1f7b, :i => 8}
   }
-
 end
