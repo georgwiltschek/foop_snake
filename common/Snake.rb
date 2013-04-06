@@ -1,3 +1,5 @@
+require "./common/Settings"
+
 class Snake
 	attr_accessor :isDead, :score
 
@@ -39,17 +41,7 @@ class Snake
       	@isDead = false
       	@score = 0
 
-      	# TODO duplicate code, put in Config or elsewhere
-      	# and retrieve from there
-		@colors = {
-			:red    => {:c => 0xAD3333, :i => 0},
-			:green  => {:c => 0x5CE65C, :i => 1},
-			:yellow => {:c => 0xFFF666, :i => 2},
-			:blue   => {:c => 0x3366FF, :i => 3},
-			:purple => {:c => 0xFF70B8, :i => 4},
-			:orange => {:c => 0xFFC266, :i => 5},
-			:white  => {:c => 0xFFFFFF, :i => 6}
-		}
+		@colors = Settings.colors
 
 		# initial growth
 		if mode == :snake then

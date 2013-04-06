@@ -1,7 +1,7 @@
 require 'opengl'
 require 'gl'
 require 'mathn'
-include Gl,Glu,Glut
+include Gl, Glu, Glut
 
 require "./common/Shader"
 
@@ -19,18 +19,10 @@ class Renderer
     @scale      = 8
     @w          = 640 / @scale
     @h          = 480 / @scale
+
     @mousePosition = [0,0]
-    
-    # TODO dupe. put into config or somewhere else
-    @colors = {
-      :red    => {:c => 0xAD3333, :i => 0},
-      :green  => {:c => 0x5CE65C, :i => 1},
-      :yellow => {:c => 0xFFF666, :i => 2},
-      :blue   => {:c => 0x3366FF, :i => 3},
-      :purple => {:c => 0xFF70B8, :i => 4},
-      :orange => {:c => 0xFFC266, :i => 5},
-      :white  => {:c => 0xFFFFFF, :i => 6}
-    }
+
+    @colors = Settings.colors
     
     SDL.init(SDL::INIT_VIDEO)
     SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
@@ -242,17 +234,17 @@ class Renderer
   			if ((i&0x8==0)!=(j&0x8==0)) then tmp = 1 else tmp=0 end
   			#c = ((((i&0x8)==0)^((j&0x8))==0))*255
   			c = tmp * 255
-  			$image[i*ImageWidth*4+j*4+0] = c
-  			$image[i*ImageWidth*4+j*4+1] = c
-  			$image[i*ImageWidth*4+j*4+2] = c
-  			$image[i*ImageWidth*4+j*4+3] = 255
+  			$image[i * ImageWidth * 4 + j * 4 + 0] = c
+  			$image[i * ImageWidth * 4 + j * 4 + 1] = c
+  			$image[i * ImageWidth * 4 + j * 4 + 2] = c
+  			$image[i * ImageWidth * 4 + j * 4 + 3] = 255
   			#c = ((((i&0x10)==0)^((j&0x10))==0))*255
   			if ((i&0x10==0)!=(j&0x10==0)) then tmp = 1 else tmp=0 end
   			c = tmp * 255
-  			$image[i*ImageWidth*4+j*4+0] = c
-  			$image[i*ImageWidth*4+j*4+1] = 0
-  			$image[i*ImageWidth*4+j*4+2] = 0
-  			$image[i*ImageWidth*4+j*4+3] = 255
+  			$image[i * ImageWidth * 4 + j * 4 + 0] = c
+  			$image[i * ImageWidth * 4 + j * 4 + 1] = 0
+  			$image[i * ImageWidth * 4 + j * 4 + 2] = 0
+  			$image[i * ImageWidth * 4 + j * 4 + 3] = 255
   		end
   	end
   end

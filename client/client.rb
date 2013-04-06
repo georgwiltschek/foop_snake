@@ -6,6 +6,7 @@ require 'logger'
 require 'json'
 require 'socket'
 require "./common/Snake"
+require "./common/Settings"
 
 if (ARGV.include? "-opengl") then
   require "./common/OpenGLRenderer"
@@ -19,8 +20,8 @@ class Client
 
     @running    = false
     @log        = Logger.new(STDOUT)
-    @serverip   = ip
-    @serverport = port
+    @serverip   = Settings.host
+    @serverport = Settings.port
 
     @renderer = Renderer.new
   end
@@ -74,7 +75,7 @@ class Client
   def get_update
     line = @socket.gets.chop
 
-    die "connection lost" if !line
+    die "connect ion lost" if !line
     
     update_snakes JSON.parse(line)
   end
@@ -135,5 +136,5 @@ class Client
 end
 
 # create and run new client
-c = Client.new("localhost", 9876)
+c = Client.new(Settings.host, Settings.port)
 c.run

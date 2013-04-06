@@ -4,6 +4,7 @@ require "logger"
 require 'socket'
 require "./server/client-proxy"
 require "./common/Snake"
+require "./common/Settings"
 
 class Server
   
@@ -25,21 +26,13 @@ class Server
     snakes = Array.new
     #@lastInput = Array.new
     @slots = Array.new
-		@w = 640 / 8
-		@h = 480 / 8
+    @w = 640 / 8
+    @h = 480 / 8
+    @w = 640 / 8
+    @h = 480 / 8
     @log = Logger.new(STDOUT)
 
-    # TODO put into config
-    # TODO actually, start using config first
-    @colors = {
-      :red    => {:c => 0xAD3333, :i => 0},
-      :green  => {:c => 0x5CE65C, :i => 1},
-      :yellow => {:c => 0xFFF666, :i => 2},
-      :blue   => {:c => 0x3366FF, :i => 3},
-      :purple => {:c => 0xFF70B8, :i => 4},
-      :orange => {:c => 0xFFC266, :i => 5},
-      :white  => {:c => 0xFFFFFF, :i => 6}
-    }
+    @colors = Settings.colors
 
     # generate snakes
     # TODO get all these from cmdline and/or config
@@ -63,7 +56,7 @@ class Server
   
   # main server loop
   def run
-    @server = TCPServer.open(9876)
+    @server = TCPServer.open(Settings.port)
     Thread.start { listen_for_clients }
 
     dc = 0    
