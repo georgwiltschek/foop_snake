@@ -137,10 +137,10 @@ class Renderer
       @background.unload
     glPopMatrix
     
-    #@trip.apply
-    #@trip.set_uniform1f("time",realSec)
-    #@trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
-    #@#trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
+    @trip.apply
+    @trip.set_uniform1f("time",realSec)
+    @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
+    @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
     
     snakes.each do |snake|
       first = true
