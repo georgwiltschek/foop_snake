@@ -8,7 +8,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 
 
-varying vec4 gl_Color; // readable on the fragment shader
+varying vec4 frontColor;
 
 // Cheap Noise
 
@@ -48,7 +48,7 @@ void main( void ) {
   // vec2 position = ( gl_FragCoord.xy / resolution.xy );
   
   float color = voronoi(p);
-  vec4 mainColor = gl_Color;
+  vec4 mainColor = frontColor;
   gl_FragColor = vec4(color) + mainColor;
   // gl_FragColor = vec4(1,1,1,1);
   
