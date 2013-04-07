@@ -4,9 +4,10 @@ Snakes are controlled by up to four clients, AI takes over snakes not claimed by
 
 run with ```ruby server/server.rb [num_snakes]```
 
-connect clients with ```ruby client/client.rb```
+connect clients with ```ruby client/client.rb [-opengl]```
 
 requirements:
-- ruby 1.9.* (maybe 1.9.3? maybe works with 1.8.*...)
-- rubysdl (Windows/Linux)
-- rsdl (OSX)
+- ruby (1.9.* needed for -opengl rendering, SDL works with 1.8.7)
+- rubysdl gem (Windows/Linux) or rsdl gem (OSX)
+- opengl gem (optional)
+- json gem (should be included in most ruby versions)
