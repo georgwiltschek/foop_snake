@@ -57,7 +57,7 @@ class Snake
 	
 	def update_tail(jsonTail)
 		@tail.clear
-		newTail = JSON.parse(jsonTail)
+		newTail = JSON.parse(jsonTail, :create_additions => true)
 		
 		newTail.each do |o|
 			@tail.push(Tail.new(o.x, o.y, o.color, self))
