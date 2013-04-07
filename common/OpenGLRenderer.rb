@@ -4,6 +4,7 @@ require 'mathn'
 require "./common/Shader"
 include Gl, Glu, Glut
 
+
 LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
 RED = [0.8, 0.1, 0.0, 1.0]
 
@@ -19,8 +20,12 @@ class Renderer
     @scale  = Settings.scale
     @w      = Settings.w
     @h      = Settings.h
+    @width = @w * @scale
+    @height = @h * @scale
     @colors = Settings.colors
     @log    = Logger.new(STDOUT)
+    @doBloom = true
+    @doBlur  = true
 
     @mousePosition = [0,0]
 
@@ -36,27 +41,20 @@ class Renderer
     glutInit()
     GL.ClearColor(0.0, 0.0, 0.0, 0.0)
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glOrtho(0, @w * @scale, @h * @scale, 0, 1000.0, -1000.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity()
-
     # texture stuff?
     # makeImage
     # makeStripeImage
-    makeCheckImages
-
-    $texName = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, $texName[0])
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
-    GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
-    # glEnable(GL_TEXTURE_2D)
+    #     makeCheckImages
+    # glPixelStore(GL_UNPACK_ALIGNMENT, 1)
+    # 
+    #     $texName = glGenTextures(1)
+    #     glBindTexture(GL_TEXTURE_2D, $texName[0])
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST)
+    #     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+    #     glTexImage2D(GL_TEXTURE_2D, 0, 3, ImageWidth, ImageHeight, 0,
+    #     GL_RGB, GL_UNSIGNED_BYTE, $image.pack("C*"))
     
     GL.Enable(GL::DEPTH_TEST)
     GL.Enable(GL::CULL_FACE)
@@ -74,7 +72,13 @@ class Renderer
     # @hblur = Shader.new('hblur')
     @backgroundList = [Shader.new('balls'), Shader.new('space'), Shader.new('background')]
     @background = @backgroundList.first
-    @trip = Shader.new('trip')  
+    @trip = Shader.new('trip')
+    
+    @blur = [Shader.new('vblur'), Shader.new('hblur')]
+    @bloom = Shader.new('bloom')
+    
+    create_fbo_texture
+    create_fbo
   end
   
   def fill_rect x,y,w,h,rgb
@@ -114,11 +118,20 @@ class Renderer
   end
   
   def draw snakes
+    debug_input_listener
+    
     realSec = (SDL.getTicks - @baseTime) / 1000.0
 
-    GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
-    # GL.MatrixMode(GL::PROJECTION)
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, @w * @scale, @h * @scale, 0, 1000.0, -1000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity()
     GL.LoadIdentity()
+    
+    glBindFramebufferEXT(GL::FRAMEBUFFER_EXT, @frameBuffer)
+    # Render into FrameBuffer
+    GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 
     #wohooo
     @r = @r + 1
@@ -163,21 +176,122 @@ class Renderer
       i += 1.5
     end
     
-    
     glPopMatrix
+    # Finished rendering into FrameBuffer
+    
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glOrtho(0, @width , @height , 0, 1000.0, -1000.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    
+    glColor 1,1,1,1
+    glDisable(GL::LIGHTING)
+    glEnable(GL::TEXTURE_2D)
+    
+    
+    if @doBlur then
+      @blur[0].apply
+      @blur[0].set_uniform1f("rt_w", @width.to_f)
+      @blur[0].set_uniform1f("rt_h", @height.to_f)
+      @blur[0].set_uniform1f("vx_offset", 0.5 )
+      render_fbo
+      @blur[0].unload
+      
+      @blur[1].apply
+      @blur[1].set_uniform1f("rt_w", @width.to_f)
+      @blur[1].set_uniform1f("rt_h", @height.to_f)
+      @blur[1].set_uniform1f("vx_offset", 0.5 )
+      render_fbo true
+      @blur[1].unload
+      return
+    end
+      
+    if @doBloom then
+      @bloom.apply
+      render_fbo    
+      @bloom.unload
+    end
+    
+    render_fbo true
+    
+    glEnable(GL::LIGHTING)
+    glDisable(GL::TEXTURE_2D)
     
     glRasterPos2d(10,20)
-
     "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
+    # puts  "FPS: #{current_fps}"
     
-    SDL.GL_swap_buffers
     @numFrames = @numFrames + 1
+  end
+  
+  def render_fbo isFinal=false
+    if isFinal then
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); # unbind
+      glBindTexture(GL_TEXTURE_2D, @texture);
+      glGenerateMipmapEXT(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      glViewport(0, 0, @width, @height);
+    
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    end
+    
+    glBindTexture(GL_TEXTURE_2D, @texture);    
+    glBegin(GL_QUADS);
+        glTexCoord2f(0,1);   glVertex2f(0,0);
+        glTexCoord2f(0,0);   glVertex2f(0,@height);
+        glTexCoord2f(1,0);   glVertex2f(@width,@height);
+        glTexCoord2f(1,1);   glVertex2f(@width,0);
+    glEnd();
+    
+    SDL.GL_swap_buffers if isFinal
   end
   
   def current_fps
     return ((@numFrames/(SDL.getTicks - @baseTime) )*1000).to_f
   end
     
+  def create_fbo
+    @frameBuffer = glGenFramebuffersEXT(1)[0]
+    glBindFramebufferEXT(GL::FRAMEBUFFER_EXT, @frameBuffer)
+    @renderBuffer = glGenRenderbuffersEXT(1)[0]
+    glBindRenderbufferEXT(GL::RENDERBUFFER_EXT,@renderBuffer)
+    glRenderbufferStorageEXT(GL::RENDERBUFFER_EXT, GL::DEPTH_COMPONENT, @width, @height)
+    glBindRenderbufferEXT(GL::RENDERBUFFER_EXT,0)
+ 
+    glFramebufferTexture2DEXT(GL::FRAMEBUFFER_EXT, GL::COLOR_ATTACHMENT0_EXT, GL::TEXTURE_2D, @texture, 0)
+    
+    glFramebufferRenderbufferEXT(GL::FRAMEBUFFER_EXT, GL::DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, @renderBuffer)
+    
+    fbo_status
+    glBindFramebufferEXT(GL::FRAMEBUFFER_EXT, 0)
+    
+  end
+  
+  def create_fbo_texture
+    @texture = glGenTextures(1)[0]
+    glBindTexture(GL::TEXTURE_2D, @texture)
+    
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, 1); #GL_TRUE
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, @width, @height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nil); # place multisampling here too!
+    glBindTexture(GL_TEXTURE_2D, 0);
+  end
+    
+  
+  def fbo_status
+    stat = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)
+    # printf("FBO status: %04X\n", stat)
+    return if (stat==0 || stat == GL_FRAMEBUFFER_COMPLETE_EXT)
+    printf("FBO status: %04X\n", stat)
+    exit(0)
+  end
+ 
   def draw_rect x, y, w, h, c    
     glPushMatrix
     fill_rect x,y,w,h,c
@@ -190,16 +304,40 @@ class Renderer
     glPopMatrix
   end
   
+  def debug_input_listener
+      event = SDL::Event2.poll
+
+      case event
+        # quit
+        when SDL::Event2::Quit
+          @running = false
+          return
+
+        # other keys
+        when SDL::Event2::KeyDown
+                      puts event.sym
+          case event.sym
+          when SDL::Key::K1
+              @doBloom = !@doBloom
+              puts "bloom #{@doBloom}"
+          when SDL::Key::K2
+              @doBlur = !@doBlur
+              puts "blur #{@doBlur}"
+
+        end
+      end
+  end
+  
   # Stolen texture creation code
   def makeImage
-    for i in 0...ImageWidth
+    for i in 0...@width
       ti = 2.0*Math::PI*i/ImageWidth.to_f
-      for j in 0...ImageHeight
+      for j in 0...@height
         tj = 2.0*Math::PI*j/ImageHeight.to_f
 
-        $image[3 * (ImageHeight * i + j)]    =  127*(1.0 + Math::sin(ti))
-        $image[3 * (ImageHeight * i + j) +1] =  127*(1.0 + Math::cos(2*tj))
-        $image[3 * (ImageHeight * i + j) +2] =  127*(1.0 + Math::cos(ti+tj))
+        $image[3 * (@height * i + j)]    =  127*(1.0 + Math::sin(ti))
+        $image[3 * (@height * i + j) +1] =  127*(1.0 + Math::cos(2*tj))
+        $image[3 * (@height * i + j) +2] =  127*(1.0 + Math::cos(ti+tj))
       end
     end
   end

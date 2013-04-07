@@ -27,10 +27,10 @@ class Shader
     GL.CompileShader(glsl_fragment_shader)
 
     shaderCompiled = GL.GetShaderiv(glsl_vertex_shader, GL::COMPILE_STATUS)
-    puts "VShader InfoLog:\n#{glGetShaderInfoLog(glsl_vertex_shader)}\n" if not shaderCompiled
+    puts "#{shader_base_file_name} VShader InfoLog:\n#{glGetShaderInfoLog(glsl_vertex_shader)}\n" if not shaderCompiled
     
     shaderCompiled = GL.GetShaderiv(glsl_fragment_shader, GL::COMPILE_STATUS)
-    puts "FShader InfoLog:\n#{glGetShaderInfoLog(glsl_fragment_shader)}\n" if not shaderCompiled
+    puts "#{shader_base_file_name} FShader InfoLog:\n#{glGetShaderInfoLog(glsl_fragment_shader)}\n" if not shaderCompiled
     
 
     # Attach the shaders to the program
@@ -74,8 +74,13 @@ class Shader
   
   def set_uniform1f(name, v)
     if (@shaderProgram) then
-      id = GL.GetUniformLocation(@shaderProgram, name);
-      GL.Uniform1f(id,v) if (id != -1)
+      begin
+        id = GL.GetUniformLocation(@shaderProgram, name);
+        GL.Uniform1f(id,v) if (id != -1)
+      rescue GL::Error => err
+        puts err
+        puts "#{name} #{v} of type #{v.type}"
+      end
     end
   end
   
