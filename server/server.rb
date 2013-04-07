@@ -25,21 +25,17 @@ class Server
   end
   
   def initialize num_snakes
-    snakes = Array.new
-    #@lastInput = Array.new
-    @slots = Array.new
-
-    @scale      = Settings.scale
-    @w          = Settings.w
-    @h          = Settings.h
-
-    @log = Logger.new(STDOUT)
-
+    snakes  = Array.new
+    @slots  = Array.new
+    @log    = Logger.new(STDOUT)
+    @scale  = Settings.scale
+    @w      = Settings.w
+    @h      = Settings.h
     @colors = Settings.colors
 
     # generate snakes
-    names      = ["Clyde", "Pinky", "Inky", "Blinky"]
-    mode       = :snake # or :tron
+    names = ["Clyde", "Pinky", "Inky", "Blinky"]
+    mode  = :snake # or :tron
 
     (1..num_snakes).each do |n|
       name = "#{names[n % names.size]}#{n}"
