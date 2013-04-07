@@ -8,5 +8,6 @@ connect clients with ```ruby client/client.rb [-opengl]```
 
 requirements:
 - ruby (1.9.* needed for -opengl rendering, SDL works with 1.8.7)
-- rubysdl gen (Windows/Linux) or rsdl gem (OSX)
+- rubysdl gem (Windows/Linux) or rsdl gem (OSX)
 - opengl gem (optional)
+- json gem (should be included in most ruby version)
