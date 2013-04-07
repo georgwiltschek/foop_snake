@@ -10,4 +10,4 @@ requirements:
 - ruby (1.9.* needed for -opengl rendering, SDL works with 1.8.7)
 - rubysdl gem (Windows/Linux) or rsdl gem (OSX)
 - opengl gem (optional)
-- json gem (should be included in most ruby version)
+- json gem (should be included in most ruby versions)
