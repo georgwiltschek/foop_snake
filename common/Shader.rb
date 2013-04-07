@@ -39,6 +39,9 @@ class Shader
 
     # Link the program
     GL.LinkProgram(glsl_program)
+    linked = glGetProgramiv(glsl_program,GL_LINK_STATUS)
+    puts "Program InfoLog:\n#{glGetProgramInfoLog(glsl_program)}\n" if not linked
+    
     
     # Cleanup the shaders, the program copied them so they aren't needed anymore
     GL.DeleteShader(glsl_vertex_shader)
