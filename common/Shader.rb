@@ -22,8 +22,16 @@ class Shader
                     File.read("./common/#{shader_base_file_name}.fsh"))
 
     # Compile shaders
+
     GL.CompileShader(glsl_vertex_shader)
     GL.CompileShader(glsl_fragment_shader)
+
+    shaderCompiled = GL.GetShaderiv(glsl_vertex_shader, GL::COMPILE_STATUS)
+    puts "VShader InfoLog:\n#{glGetShaderInfoLog(glsl_vertex_shader)}\n" if not shaderCompiled
+    
+    shaderCompiled = GL.GetShaderiv(glsl_fragment_shader, GL::COMPILE_STATUS)
+    puts "FShader InfoLog:\n#{glGetShaderInfoLog(glsl_fragment_shader)}\n" if not shaderCompiled
+    
 
     # Attach the shaders to the program
     GL.AttachShader(glsl_program, glsl_vertex_shader)
@@ -41,7 +49,12 @@ class Shader
   end
   
   def apply
-    GL.UseProgram(@shaderProgram) if @shaderProgram
+    begin
+      GL.UseProgram(@shaderProgram) if @shaderProgram
+    rescue GL::Error => err
+      p err
+      @shaderProgram = nil
+    end
   end
   
   def unload
