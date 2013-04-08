@@ -70,7 +70,7 @@ class Server
 			d = (Time.now - t) * 1000 # elapsed time since last tick
 
 			# tick
-			if (d > 100) then
+      if (d > 100) then
 				t      = Time.now
         colors = nil
         dc    += 1
@@ -117,20 +117,17 @@ class Server
         @slots.each do |slot|
           slot.client.update(snakes)
         end
-        
       end
-    
     end
-    
   end
   
   def listen_for_clients
     while @running
       client = @server.accept
-      Thread.start(client) do |client|
+      Thread.start(client) do | c |
         # slot.listen_for_input
         @log.info "new client connected"
-        slot = get_slot(client)
+        slot = get_slot(c)
         @log.info "client got slot " #+ @slots[i]
         slot.client.listen_for_input
       end
