@@ -33,6 +33,8 @@ class Server
     @h      = Settings.h
     @colors = Settings.colors
 
+    @singleplayer = (num_snakes == 1)
+    puts "running in singleplayer" if @singleplayer
     # generate snakes
     names = ["Clyde", "Pinky", "Inky", "Blinky"]
     mode  = :snake # or :tron
@@ -47,6 +49,11 @@ class Server
       s = Snake.new(x, y, c,  name,  mode, @w, @h)
       @slots.push Slot.new(ClientProxy.new, s)
       snakes.push(s)
+    end
+    
+    if @singleplayer then
+      s = Snake.new(rand(@w), rand(@h), @colors.keys[rand(@colors.keys.length)], ":fruit", :fruit, @w, @h)
+      @slots.push Slot.new(ClientProxy.new, s)
     end
 
     @running = true
@@ -99,6 +106,10 @@ class Server
         @slots.each do |slot|
           if !slot.snake.isDead
             slot.snake.move(slot.direction, snakes)
+          end
+          
+          if @singleplayer && slot.snake.isDead then
+            slot.snake.resurrect
           end
         end
 
