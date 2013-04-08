@@ -1,7 +1,7 @@
 require "./common/Settings"
 
 class Snake
-	attr_accessor :isDead, :score
+	attr_accessor :isDead, :score, :pos_x, :pos_y
 
 	class Tail
 		attr_accessor :x, :y, :color, :snake, :isDead
@@ -66,6 +66,8 @@ class Snake
 
 	# move and detect collisions
 	def move direction, snakes
+    return if @mode != :snake
+    
 		# no straight backwards
 		if opposite(@lastdirection) == direction then
 			direction = @lastdirection
@@ -150,6 +152,11 @@ class Snake
 		
 		return total - @tail.length
 	end
+
+  def resurrect
+    @isDead = false
+		@tail.push(Tail.new(rand(@w),rand(@h),@color,self))
+  end
 
 	def update_colors colors
 		@colors = colors

@@ -120,9 +120,10 @@ class Renderer
   end
   
   def draw snakes
-    debug_input_listener
+    @currentSnakes = snakes
+    # debug_input_listener
     
-    realSec = (SDL.getTicks - @baseTime) / 1000.0
+    @realSec = (SDL.getTicks - @baseTime) / 1000.0
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -143,7 +144,7 @@ class Renderer
       @background = @backgroundList[(@numFrames%300)/100]
 
       @background.apply
-      @background.set_uniform1f("time",realSec)
+      @background.set_uniform1f("time",@realSec)
       @background.set_uniform2f("resolution",@h * @scale, @w * @scale)
       @background.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
       
@@ -152,24 +153,8 @@ class Renderer
       @background.unload
     glPopMatrix
     
-    @trip.apply
-    @trip.set_uniform1f("time",realSec)
-    @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
-    @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
-    
-    snakes.each do |snake|
-      first = true
-      snake.get_tail.each do |t|
-        if first then
-          fill_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
-          first = false
-        else
-          draw_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
-        end
-      end
-    end
-    
-    @trip.unload
+
+    draw_snakes
     
     # draw rules
     i = 0
@@ -225,12 +210,34 @@ class Renderer
     
     glEnable(GL::LIGHTING)
     glDisable(GL::TEXTURE_2D)
+
     
-    glRasterPos2d(10,20)
-    "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
     # puts  "FPS: #{current_fps}"
     
     @numFrames = @numFrames + 1
+  end
+  
+  def draw_snakes withoutShader=false
+    if !withoutShader then
+      @trip.apply
+      @trip.set_uniform1f("time",@realSec)
+      @trip.set_uniform2f("resolution",@h * @scale, @w * @scale)
+      @trip.set_uniform2f("mouse",@mousePosition[0],@mousePosition[1])
+    end
+    
+    @currentSnakes.each do |snake|
+      first = true
+      snake.get_tail.each do |t|
+        if first then
+          fill_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
+          first = false
+        else
+          draw_rect t.x * @scale, t.y * @scale, @scale - 1, @scale - 1, @colors[t.color.to_sym][:c]
+        end
+      end
+    end
+    
+    @trip.unload if !withoutShader
   end
   
   def render_fbo isFinal=false
@@ -257,6 +264,15 @@ class Renderer
         glTexCoord2f(1,0);   glVertex2f(@width,@height);
         glTexCoord2f(1,1);   glVertex2f(@width,0);
     glEnd();
+    
+    if isFinal then
+      glEnable(GL::LIGHTING)
+      glDisable(GL::TEXTURE_2D)
+      draw_snakes
+      
+      glRasterPos2d(10,20)
+      "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
+    end
     
     glDeleteTextures(previousTexture) if !isFinal
     SDL.GL_swap_buffers if isFinal
