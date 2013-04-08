@@ -26,6 +26,7 @@ class Renderer
     @log    = Logger.new(STDOUT)
     @doBloom = true
     @doBlur  = true
+    @doTunnelblick  = true
 
     @mousePosition = [0,0]
 
@@ -76,6 +77,7 @@ class Renderer
     
     @blur = [Shader.new('vblur'), Shader.new('hblur')]
     @bloom = Shader.new('bloom')
+    @tunnelblick = Shader.new('tunnelblick')
     
     create_fbo_texture
     create_fbo
@@ -138,7 +140,7 @@ class Renderer
     glPushMatrix
 
     glPushMatrix
-      @background = @backgroundList[(@numFrames%3000)/1000]
+      @background = @backgroundList[(@numFrames%300)/100]
 
       @background.apply
       @background.set_uniform1f("time",realSec)
@@ -190,6 +192,13 @@ class Renderer
     glEnable(GL::TEXTURE_2D)
     
     
+    # if @doTunnelblick then
+    #   @tunnelblick.apply
+    #   render_fbo true
+    #   @tunnelblick.unload
+    #   return
+    # end
+    
     if @doBlur then
       @blur[0].apply
       @blur[0].set_uniform1f("rt_w", @width.to_f)
@@ -202,9 +211,8 @@ class Renderer
       @blur[1].set_uniform1f("rt_w", @width.to_f)
       @blur[1].set_uniform1f("rt_h", @height.to_f)
       @blur[1].set_uniform1f("vx_offset", 0.5 )
-      render_fbo true
+      render_fbo
       @blur[1].unload
-      return
     end
       
     if @doBloom then
@@ -233,10 +241,16 @@ class Renderer
       glBindTexture(GL_TEXTURE_2D, 0);
       glViewport(0, 0, @width, @height);
     
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+      glBindTexture(GL_TEXTURE_2D, @texture);    
+    else
+      # we have to render into a new texture
+      previousTexture = @texture
+      create_fbo_texture
+      glFramebufferTexture2DEXT(GL::FRAMEBUFFER_EXT, GL::COLOR_ATTACHMENT0_EXT, GL::TEXTURE_2D, @texture, 0)
+      glBindTexture(GL_TEXTURE_2D, previousTexture);    
     end
     
-    glBindTexture(GL_TEXTURE_2D, @texture);    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glBegin(GL_QUADS);
         glTexCoord2f(0,1);   glVertex2f(0,0);
         glTexCoord2f(0,0);   glVertex2f(0,@height);
@@ -244,6 +258,7 @@ class Renderer
         glTexCoord2f(1,1);   glVertex2f(@width,0);
     glEnd();
     
+    glDeleteTextures(previousTexture) if !isFinal
     SDL.GL_swap_buffers if isFinal
   end
   
@@ -323,6 +338,10 @@ class Renderer
           when SDL::Key::K2
               @doBlur = !@doBlur
               puts "blur #{@doBlur}"
+          when SDL::Key::K3
+              @doTunnelblick = !@doTunnelblick
+              puts "tunnelblick #{@doTunnelblick}"
+            
 
         end
       end
