@@ -6,7 +6,7 @@ module Settings
   @host   = "localhost"
   @port   = 9876
 
-  @scale  = 8
+  @scale  = 16
   @w      = 640 / @scale
   @h      = 480 / @scale
 

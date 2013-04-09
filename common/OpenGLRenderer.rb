@@ -1,3 +1,5 @@
+
+
 require 'opengl'
 require 'gl'
 require 'mathn'
@@ -5,7 +7,80 @@ require "./common/Shader"
 include Gl, Glu, Glut
 
 
-LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
+VERTEX_LIST = [
+  [0,    0,    +0.1],
+  [0,    0.2,  +0.1],
+  [1,    0,    +0.1],
+  [1,    0.2,  +0.1],
+  [0,    0,    -0.1],
+  [1,    0,    -0.1],
+  [0,    0.2,  -0.1],
+  [1,    0.2,  -0.1],
+  [0,    1,    +0.1],
+  [0.2,  1,    +0.1],
+  [0.2,  0.2,  +0.1],
+  [0,    1,    -0.1],
+  [0.2,  1,    -0.1],
+  [0.2,  0.2,  -0.1],
+  [0.2,  0.8,  +0.1],
+  [1,    0.8,  +0.1],
+  [1,    1,    +0.1],
+  [0.2,  0.8,  -0.1],
+  [0.2,  1,    -0.1],
+  [1,    0.8,  -0.1],
+  [1,    1,    -0.1],
+  [0.8,  0.8,  +0.1],
+  [0.8,  0.2,  +0.1],
+  [0.8,  0.8,  -0.1],
+  [0.8,  0.2,  -0.1]
+]
+
+PLANES = [
+  [1,  2,  3,  4]     ,
+  [5,  1,  6,  3]     ,
+  [7,  5,  8,  6]     ,
+  [2,  7,  4,  8]     ,
+
+  [11,  2,   10,  9]  ,
+  [2,   7,   9,   12] ,
+  [7,   14,  12,  13] ,
+  [14,  11,  13,  10] ,
+                      
+  [15,  10,  16,  17] ,  
+  [18,  15,  20,  16] ,
+  [13,  18,  21,  20] ,
+  [10,  13,  17,  21] ,
+                      
+  [22,  16,  23,  4]  ,
+  [24,  22,  25,  23] ,
+  [20,  24,  8,   25] ,
+  [16,  20,  4,   8]  
+]
+
+NORMALS = [
+  [0.0,  0.0,  1.0],
+  [0.0,  -1.0,  0.0],
+  [0.0,  0.0,  -1.0],
+  [0.0,  1.0,  0.0],
+  
+  [0.0,  0.0,  1.0],
+  [-1.0,  0.0,  0.0],
+  [0.0,  0.0,  -1.0],
+  [1.0,  0.0,  0.0],
+
+  [0.0,  0.0,  1.0],
+  [0.0,  -1.0,  0.0],
+  [0.0,  0.0,  -1.0],
+  [0.0,  1.0,  0.0],
+  
+  [0.0,  0.0,  1.0],
+  [-1.0,  0.0,  0.0],
+  [0.0,  0.0,  -1.0],
+  [1.0,  0.0,  0.0],
+]
+
+
+LIGHT_POS = [250.0, 250.0, 100.0, 1.0]
 RED = [0.8, 0.1, 0.0, 1.0]
 
 ImageWidth = 20
@@ -81,6 +156,9 @@ class Renderer
     
     create_fbo_texture
     create_fbo
+    @rx = 0
+    @ry = 0
+    @p = 16
   end
   
   def fill_rect x,y,w,h,rgb
@@ -121,7 +199,7 @@ class Renderer
   
   def draw snakes
     @currentSnakes = snakes
-    # debug_input_listener
+    debug_input_listener
     
     @realSec = (SDL.getTicks - @baseTime) / 1000.0
 
@@ -135,6 +213,26 @@ class Renderer
     glBindFramebufferEXT(GL::FRAMEBUFFER_EXT, @frameBuffer)
     # Render into FrameBuffer
     GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
+
+    ############
+    # glPushMatrix
+    #   glScale 15,15,15
+    #   draw_rect 10,10,10,10,0xFF0000
+    # glPopMatrix
+    # 
+    # glMatrixMode(GL_PROJECTION)
+    # glLoadIdentity()
+    # glOrtho(0, @width , @height , 0, 1000.0, -1000.0)
+    # glMatrixMode(GL_MODELVIEW)
+    # glLoadIdentity()
+    # 
+    # glColor 1,1,1,1
+    # glDisable(GL::LIGHTING)
+    # glEnable(GL::TEXTURE_2D)
+    # render_fbo true
+    # 
+    # return
+    ############
 
     #wohooo
     @r = @r + 1
@@ -162,6 +260,50 @@ class Renderer
       fill_rect i * @scale, 0 * @scale, @scale, @scale, @colors[color[0].to_sym][:c]
       i += 1.5
     end
+    
+    
+    ##########################################################
+    GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
+    glTranslate 220,220,0
+    glRotate @rx, 1,0,0
+    glRotate @ry, 0,1,0 
+    glScale 150,150,150
+    # fill_rect 1,1,1,1,0xFF0000
+      glColor 1,0,0,1
+    
+      # glBindTexture(GL_TEXTURE_2D, $texName[0])
+    
+      GL.Material(GL::FRONT, GL::AMBIENT_AND_DIFFUSE, [1, 0, 0])
+      GL.Material(GL::FRONT, GL::SPECULAR, [1.0, 1.0, 1.0]);
+      GL.Material(GL::FRONT, GL::SHININESS, [50]);
+    
+      GL.Material(GL::BACK, GL::AMBIENT_AND_DIFFUSE, [1, 0, 0])
+      GL.Material(GL::BACK, GL::SPECULAR, [1.0, 1.0, 1.0]);
+      GL.Material(GL::BACK, GL::SHININESS, [50]);
+
+      i = 0
+      PLANES.each { |plane|
+        glBegin Gl::GL_TRIANGLE_STRIP
+          # glNormal3fv(NORMALS[i])
+          # glTexCoord2f(0.0, 1.0)
+          # glColor3f( 1.0, 0.0, 0.0 )
+          glVertex3fv( VERTEX_LIST[plane[0]-1] )
+          # glTexCoord2f(1.0, 1.0)
+          # glColor3f( 0.0, 1.0, 0.0 )
+          glVertex3fv( VERTEX_LIST[plane[1]-1] )
+          # glTexCoord2f(1.0, 0.0)
+          # glColor3f( 0.0, 0.0, 1.0 )
+          glVertex3fv(  VERTEX_LIST[plane[2]-1] )
+          # glTexCoord2f(0.0, 0.0)
+          # glColor3f( 1.0, 0.0, 1.0 )
+          glVertex3fv(  VERTEX_LIST[plane[3]-1] )
+        glEnd
+        puts @p
+        puts "#{VERTEX_LIST[plane[0]-1]}, #{VERTEX_LIST[plane[1]-1]}, #{VERTEX_LIST[plane[2]-1]}, #{VERTEX_LIST[plane[3]-1]}"
+        i = i + 1
+        break if i == @p
+      }
+      ##########################################################    
     
     glPopMatrix
     # Finished rendering into FrameBuffer
@@ -268,7 +410,7 @@ class Renderer
     if isFinal then
       glEnable(GL::LIGHTING)
       glDisable(GL::TEXTURE_2D)
-      draw_snakes
+      # draw_snakes true
       
       glRasterPos2d(10,20)
       "FPS: #{current_fps}".each_byte { |x| glutBitmapCharacter(GLUT_BITMAP_9_BY_15, x) }
@@ -357,7 +499,18 @@ class Renderer
           when SDL::Key::K3
               @doTunnelblick = !@doTunnelblick
               puts "tunnelblick #{@doTunnelblick}"
-            
+            when SDL::Key::UP
+              @rx = @rx + 10
+            when SDL::Key::DOWN
+              @rx = @rx - 10
+            when SDL::Key::LEFT
+              @ry = @ry + 10
+            when SDL::Key::RIGHT
+              @ry = @ry - 10
+            when SDL::Key::P
+              @p = @p + 1
+            when SDL::Key::O
+              @p = @p - 1            
 
         end
       end
