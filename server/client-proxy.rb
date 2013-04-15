@@ -42,9 +42,11 @@ class ClientProxy
     return @lastInput
   end
 
-  def update(update)
-    if update.type == :update_snakes
-      snakes = update.msg
+  def update(data)
+    update = JSON.parse(data, :create_additions => true )
+
+    if update.type.to_sym == :update_snakes
+      snakes = update.msg #FIXME wieso bist du ein stringarray und kein snakearray??!
     else
       return
     end
@@ -53,8 +55,9 @@ class ClientProxy
       begin
         stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-
-        @client.puts(Message.new(:update_snakes, stoneColdKilledSnakes).to_json)
+        msg = Message.new("update_snakes", stoneColdKilledSnakes)
+        
+        @client.puts(Message.new(JSON.dump(msg)))
       rescue Exception => myException
         @log.info "Exception rescued : #{myException}"
         @client = nil

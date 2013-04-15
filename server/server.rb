@@ -115,10 +115,10 @@ class Server
         end
 
         # updates to clients
+        msg = Message.new("update_snakes", snakes)
+        
         @slots.each do |slot|
-          update_msg = Message.new(:update_snakes, snakes)
-
-          slot.client.update(update_msg)
+          slot.client.update(JSON.dump(msg))
         end
       end
     end

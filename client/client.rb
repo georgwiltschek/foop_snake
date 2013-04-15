@@ -83,7 +83,9 @@ class Client
 
     update = JSON.parse(line, :create_additions => true)
 
-    if update.type == :update_snakes
+    if update.type.to_sym == :update_snakes
+puts "UPDATE"
+
       update_snakes update.msg
     end
 

@@ -14,16 +14,28 @@ class Snake
 			@snake = snake
 		end
 
-		def to_json(*a)
-			{
-				'json_class'   => self.class.name,
-				'data'         => {"x" => @x , "y" => @y, "color" => @color},
-			}.to_json(*a)
+		def self.json_create(o)
+			new(*o['data'])
 		end
 
-		def self.json_create(o)
-			new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
+		def to_json(*a)
+		{
+			'json_class' => self.class.name, 
+			'data' => [@x, @y, @color, nil]
+		}.to_json(*a)
 		end
+
+
+		# def to_json(*a)
+		# 	{
+		# 		'json_class'   => self.class.name,
+		# 		'data'         => {"x" => @x , "y" => @y, "color" => @color},
+		# 	}.to_json(*a)
+		# end
+
+		# def self.json_create(o)
+		# 	new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
+		# end
 	end
 
 	# Snake Constructor
