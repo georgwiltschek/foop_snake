@@ -20,5 +20,4 @@ class Message
 		 }.to_json(*a)
 	end
 
-
 end

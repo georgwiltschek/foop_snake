@@ -79,6 +79,7 @@ class Client
   # gets game state from server
   def get_update
     line = @socket.gets.chop
+    puts line
     die "connection lost" if !line
 
     update = JSON.parse(line, :create_additions => true)

@@ -56,8 +56,7 @@ class ClientProxy
         stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
         msg = Message.new("update_snakes", stoneColdKilledSnakes)
-        
-        @client.puts(Message.new(JSON.dump(msg)))
+        @client.puts(JSON.dump(msg))
       rescue Exception => myException
         @log.info "Exception rescued : #{myException}"
         @client = nil
