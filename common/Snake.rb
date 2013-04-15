@@ -21,7 +21,6 @@ class Snake
 			}.to_json(*a)
 		end
 
-		# i cant get this running for shit.. ideas?
 		def self.json_create(o)
 			new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
 		end

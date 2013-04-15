@@ -7,6 +7,7 @@ require 'json'
 require 'socket'
 require "./common/Snake"
 require "./common/Settings"
+require "./common/Message"
 
 if (ARGV.include? "-opengl") then
   require "./common/OpenGLRenderer"
@@ -78,10 +79,13 @@ class Client
   # gets game state from server
   def get_update
     line = @socket.gets.chop
-
     die "connect ion lost" if !line
-    
-    update_snakes JSON.parse(line)
+
+    update = JSON.parse(line, :create_additions => true)
+
+    if update.type == :update_snakes
+      update_snakes update.msg
+    end
   end
 
   # update each snake

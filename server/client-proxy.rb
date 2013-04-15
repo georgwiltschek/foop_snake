@@ -1,4 +1,5 @@
 require 'logger'
+require "./common/Message"
 
 class ClientProxy
   attr_accessor :client, :lastInput, :isBot
@@ -41,17 +42,25 @@ class ClientProxy
     return @lastInput
   end
 
-  def update(snakes)
+  def update(update)
+    if update.type == :update_snakes
+      snakes = update.msg
+    else
+      return
+    end
+
     if @client
       begin
         stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-        @client.puts(stoneColdKilledSnakes)
+
+        @client.puts(Message.new(:update_snakes, stoneColdKilledSnakes).to_json)
       rescue Exception => myException
         @log.info "Exception rescued : #{myException}"
         @client = nil
         @isBot = true
       end
+   
     end
   end
   
