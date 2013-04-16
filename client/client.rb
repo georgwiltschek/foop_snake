@@ -7,6 +7,7 @@ require 'json'
 require 'socket'
 require "./common/Snake"
 require "./common/Settings"
+require "./common/Message"
 
 if (ARGV.include? "-opengl") then
   require "./common/OpenGLRenderer"
@@ -78,10 +79,20 @@ class Client
   # gets game state from server
   def get_update
     line = @socket.gets.chop
+    die "connection lost" if !line
 
-    die "connect ion lost" if !line
-    
-    update_snakes JSON.parse(line)
+    update = JSON.parse(line, :create_additions => true)
+
+    if update.type.to_sym == :update_snakes
+      update.msg =  JSON.parse(update.msg, :create_additions => true)
+      update_snakes update.msg
+    end
+
+    # TODO: switch according to update.type
+  end
+
+  def update_colors colors
+    @renderer.colors = @colors = colors
   end
 
   # update each snake
@@ -132,8 +143,6 @@ class Client
 
         # get updated gamestate from server
         get_update
-
-        # TODO get updates for color order
       end
 
       @renderer.draw(@snakes)
