@@ -115,10 +115,15 @@ class Server
         end
 
         # updates to clients
+        puts "server #{snakes.class} of #{snakes[0].class} #{snakes[1].class}"
         msg = Message.new("update_snakes", snakes)        
+        puts "msg #{msg.type.class} #{msg.type} #{msg.msg.class} #{msg.msg[0].class} #{msg.msg[1].class} #{msg.msg[0].name} \n --------"
+
         @slots.each do |slot|
+          puts "#{JSON.dump(msg)} server"
           slot.client.update(JSON.dump(msg))
         end
+
       end
     end
   end

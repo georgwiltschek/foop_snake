@@ -1,7 +1,7 @@
 require "./common/Settings"
 
 class Snake
-	attr_accessor :isDead, :score, :pos_x, :pos_y
+	attr_accessor :isDead, :score, :pos_x, :pos_y, :name
 
 	class Tail
 		attr_accessor :x, :y, :color, :snake, :isDead
@@ -15,7 +15,8 @@ class Snake
 		end
 
 		def self.json_create(o)
-			new(*o['data'])
+#			new(*o['data'])
+			new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
 		end
 
 		def to_json(*a)
@@ -35,7 +36,7 @@ class Snake
 
 		# def self.json_create(o)
 		# 	new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
-		# end
+		# endnil
 	end
 
 	# Snake Constructor

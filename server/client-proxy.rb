@@ -50,15 +50,20 @@ class ClientProxy
     else
       return
     end
-
+puts update.msg[0].to_json
+puts data.to_json
+        puts "#{snakes[0].class} proxy"
+   
     if @client
       begin
         stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
         stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-        msg = Message.new("update_snakes", stoneColdKilledSnakes)
+#        msg = Message.new("update_snakes", stoneColdKilledSnakes)
+        msg = Message.new("update_snakes", stonedSnakes)
+
         @client.puts(JSON.dump(msg))
       rescue Exception => myException
-        @log.info "Exception rescued : #{myException}"
+        @log.info "Exception rescued: #{myException}"
         @client = nil
         @isBot = true
       end
