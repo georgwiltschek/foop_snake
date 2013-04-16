@@ -65,6 +65,7 @@ class Server
     @server = TCPServer.open(Settings.port)
     Thread.start { listen_for_clients }
 
+    colors_changed = false
     dc = 0    
 		t = Time.now
     while @running
@@ -85,11 +86,19 @@ class Server
         # rules change
         if (dc > 100) then
           dc = 0
+  
+          # shuffle colors
           @colors.each do | color |
             @colors[color[0].to_sym][:i] = rand(@colors.size * 50)
           end
           colors = @colors
-          @log.info "rules change #{@colors.inspect}"
+
+          # update clients
+          @slots.each do |slot|
+            slot.client.update(Message.new("update_colors", colors))
+          end
+
+          # print current scores TODO why here? why not?
           snakes.each do | snake |
             @log.info "#{snake.get_name} score: #{snake.score}"
           end
@@ -132,6 +141,7 @@ class Server
         @log.info "new client connected"
         slot = get_slot(c)
         @log.info "client got slot " #+ @slots[i]
+        slot.client.puts(Message.new("update_colors", @colors))
         slot.client.listen_for_input
       end
     end

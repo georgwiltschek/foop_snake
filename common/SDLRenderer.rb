@@ -1,7 +1,10 @@
 require "./common/Settings"
+require "./common/Hash"
 
 # Simple SDL based, double buffered renderer
 class Renderer
+  attr_accessor
+
   def initialize
     @scale  = Settings.scale
     @w      = Settings.w
@@ -14,6 +17,10 @@ class Renderer
     @BGCOLOR = 0x000000 # black
   end
   
+  def update_colors colors
+    @colors = Hash.transform_keys_to_symbols(colors)
+  end
+
   # draw everything
   def draw snakes
     # background

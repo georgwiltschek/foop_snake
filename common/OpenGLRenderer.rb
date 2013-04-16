@@ -1,9 +1,10 @@
 require 'opengl'
 require 'gl'
 require 'mathn'
+require "./common/Hash"
 require "./common/Shader"
-include Gl, Glu, Glut
 
+include Gl, Glu, Glut
 
 LIGHT_POS = [100.0, 0.0, 100.0, 1.0]
 RED = [0.8, 0.1, 0.0, 1.0]
@@ -15,7 +16,8 @@ $texName = []
 
 # not so simple opengl based renderer. with shaders and stuff! :)
 class Renderer
-  
+  attr_accessor :colors
+
   def initialize
     @scale  = Settings.scale
     @w      = Settings.w
@@ -83,6 +85,10 @@ class Renderer
     create_fbo
   end
   
+  def update_colors colors
+    @colors = Hash.transform_keys_to_symbols(colors)
+  end
+
   def fill_rect x,y,w,h,rgb
     red = (rgb >> 16) & 0xff;
     green = (rgb >> 8) & 0xff;

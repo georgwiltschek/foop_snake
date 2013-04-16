@@ -58,6 +58,10 @@ class ClientProxy
             @isBot = true
           end   
         end
+      when :update_colors
+        if @client
+          @client.puts(JSON.dump(update))
+        end
       end
   end
 end

@@ -83,16 +83,13 @@ class Client
 
     update = JSON.parse(line, :create_additions => true)
 
-    if update.type.to_sym == :update_snakes
-      update.msg =  JSON.parse(update.msg, :create_additions => true)
-      update_snakes update.msg
+    case update.type.to_sym
+      when :update_snakes
+        update.msg = JSON.parse(update.msg, :create_additions => true)
+        update_snakes update.msg
+      when :update_colors      
+        @renderer.update_colors update.msg
     end
-
-    # TODO: switch according to update.type
-  end
-
-  def update_colors colors
-    @renderer.colors = @colors = colors
   end
 
   # update each snake
