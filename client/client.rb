@@ -89,6 +89,8 @@ class Client
         update_snakes update.msg
       when :update_colors      
         @renderer.update_colors update.msg
+      when :identity
+        #TODO it's me! do something!
     end
   end
 

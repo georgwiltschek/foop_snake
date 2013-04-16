@@ -65,7 +65,6 @@ class Server
     @server = TCPServer.open(Settings.port)
     Thread.start { listen_for_clients }
 
-    colors_changed = false
     dc = 0    
 		t = Time.now
     while @running
@@ -152,6 +151,7 @@ class Server
       if slot.client.isBot == true then
         slot.client.isBot = false
         slot.client.client = client
+        # TODO send self (name or id or anything)
         return slot
       end
     end

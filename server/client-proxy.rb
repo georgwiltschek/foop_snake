@@ -62,6 +62,8 @@ class ClientProxy
         if @client
           @client.puts(JSON.dump(update))
         end
+      when :identity
+        # TODO forward identity to client
       end
   end
 end
