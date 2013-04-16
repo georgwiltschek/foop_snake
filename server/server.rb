@@ -5,6 +5,7 @@ require 'socket'
 require "./server/client-proxy"
 require "./common/Snake"
 require "./common/Settings"
+require "./common/Message"
 
 class Server
 
@@ -114,9 +115,11 @@ class Server
         end
 
         # updates to clients
+        msg = Message.new("update_snakes", snakes)        
         @slots.each do |slot|
-          slot.client.update(snakes)
+          slot.client.update(msg)
         end
+
       end
     end
   end
