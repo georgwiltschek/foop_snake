@@ -2,7 +2,7 @@ require 'opengl'
 require 'gl'
 require 'mathn'
 require "./common/Hash"
-require "./common/Shader"
+require "./client/opengl/Shader"
 
 include Gl, Glu, Glut
 

@@ -141,7 +141,6 @@ class Server
         @log.info "new client connected"
         slot = get_slot(c)
         @log.info "client got slot " #+ @slots[i]
-        slot.client.puts(Message.new("update_colors", @colors))
         slot.client.listen_for_input
       end
     end

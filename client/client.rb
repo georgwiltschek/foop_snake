@@ -10,9 +10,9 @@ require "./common/Settings"
 require "./common/Message"
 
 if (ARGV.include? "-opengl") then
-  require "./common/OpenGLRenderer"
+  require "./client/opengl/OpenGLRenderer"
 else
-  require "./common/SDLRenderer"
+  require "./client/sdl/SDLRenderer"
 end
 
 # TODO show score
