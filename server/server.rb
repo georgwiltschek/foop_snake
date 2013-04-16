@@ -139,6 +139,7 @@ class Server
         # slot.listen_for_input
         @log.info "new client connected"
         slot = get_slot(c)
+        slot.client.update(Message.new("identity", "#{slot.snake.get_name}"))
         @log.info "client got slot " #+ @slots[i]
         slot.client.listen_for_input
       end

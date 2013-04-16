@@ -63,7 +63,14 @@ class ClientProxy
           @client.puts(JSON.dump(update))
         end
       when :identity
-        # TODO forward identity to client
+
+        # so far so goos
+        puts JSON.dump(update)
+        puts update.type
+        puts update.msg
+
+        # but this fails
+#         @client.puts(JSON.dump(Message.new("identity", hash)))
       end
   end
 end
