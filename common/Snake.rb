@@ -15,8 +15,8 @@ class Snake
 		end
 
 		def self.json_create(o)
-#			new(*o['data'])
-			new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
+			new(*o['data'])
+#			new(o['data']['x'],o['data']['y'],o['data']['color'],nil)
 		end
 
 		def to_json(*a)

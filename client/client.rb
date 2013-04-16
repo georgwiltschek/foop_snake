@@ -79,14 +79,12 @@ class Client
   # gets game state from server
   def get_update
     line = @socket.gets.chop
-    puts line
     die "connection lost" if !line
 
     update = JSON.parse(line, :create_additions => true)
 
     if update.type.to_sym == :update_snakes
-puts "UPDATE"
-
+      update.msg =  JSON.parse(update.msg, :create_additions => true)
       update_snakes update.msg
     end
 

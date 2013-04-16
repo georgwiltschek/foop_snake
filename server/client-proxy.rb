@@ -42,33 +42,22 @@ class ClientProxy
     return @lastInput
   end
 
-  def update(data)
-    update = JSON.parse(data, :create_additions => true )
-
-    if update.type.to_sym == :update_snakes
-      snakes = update.msg #FIXME wieso bist du ein stringarray und kein snakearray??!
-    else
-      return
-    end
-puts update.msg[0].to_json
-puts data.to_json
-        puts "#{snakes[0].class} proxy"
-   
-    if @client
-      begin
-        stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
-        stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-#        msg = Message.new("update_snakes", stoneColdKilledSnakes)
-        msg = Message.new("update_snakes", stonedSnakes)
-
-        @client.puts(JSON.dump(msg))
-      rescue Exception => myException
-        @log.info "Exception rescued: #{myException}"
-        @client = nil
-        @isBot = true
+  def update update
+    case update.type.to_sym
+      when :update_snakes
+        snakes = update.msg       
+        if @client
+          begin
+            stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
+            stoneColdKilledSnakes = JSON.dump(stonedSnakes)
+            msg = Message.new("update_snakes", stoneColdKilledSnakes)
+            @client.puts(JSON.dump(msg))
+          rescue Exception => myException
+            @log.info "Exception rescued: #{myException}"
+            @client = nil
+            @isBot = true
+          end   
+        end
       end
-   
-    end
   end
-  
 end
