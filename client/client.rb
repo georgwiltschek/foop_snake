@@ -5,6 +5,7 @@ require 'sdl'
 require 'logger'
 require 'json'
 require 'socket'
+
 require "./common/Snake"
 require "./common/Settings"
 require "./common/Message"
@@ -18,6 +19,7 @@ end
 # TODO show score
 # TODO know which snake belongs to the client (and highlight it in the renderer somehow)
 # TODO show death and other messages
+# TODO messaque queue or something for comm
 
 class Client
   # constructor
@@ -27,56 +29,40 @@ class Client
     @log        = Logger.new(STDOUT)
     @serverip   = Settings.host
     @serverport = Settings.port
-
-    @renderer = Renderer.new
+    @renderer   = Renderer.new
   end
 
+  # handle keyboard and other events
   def handle_input
-    event = SDL::Event2.poll
-
-    case event
-      # quit
-      when SDL::Event2::Quit
-        @running = false
-        return
-
-      # other keys
+    case event = SDL::Event2.poll
+      when SDL::Event2::Quit    then @running = false
       when SDL::Event2::KeyDown
         case event.sym
-          # quit via escape
-          when SDL::Key::ESCAPE
-            @running = false
-            return
-
-          # directions
-          when SDL::Key::LEFT
-            direction = :left
-          when SDL::Key::RIGHT
-            direction = :right
-          when SDL::Key::UP
-            direction = :up
-          when SDL::Key::DOWN
-            direction = :down
+          when SDL::Key::ESCAPE then @running = false
+          when SDL::Key::LEFT   then direction = :left
+          when SDL::Key::RIGHT  then direction = :right
+          when SDL::Key::UP     then direction = :up
+          when SDL::Key::DOWN   then direction = :down        
+        end
 
         @log.info "Key Event: #{event.sym} #{direction}"
         return direction
-      end
     end
   end
 
+  # open a connection to the server
   def connect_to_server
     @socket = TCPSocket.open(@serverip, @serverport)
   end
   
   # send the direction to the server
   def send_direction(direction)
-    package = {"direction"  => direction}
-    @log.info jsonPackage = JSON.dump(package)
-    
-    @socket.puts(jsonPackage)
+    package =JSON.dump( {"direction"  => direction})
+    @log.info package
+    @socket.puts(package)
   end
   
-  # gets game state from server
+  # gets game state update from server
   def get_update
     line = @socket.gets.chop
 
@@ -112,14 +98,13 @@ class Client
   end
 
   def run
-    changed  = false
     @snakes  = Array.new
     @running = true
+    changed  = false
     lastdir  = nil
+    t        = Time.now
 
     die "can't connect to server" unless connect_to_server
-
-    t = Time.now
 
     # main game loop
     while @running
