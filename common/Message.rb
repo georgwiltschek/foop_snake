@@ -6,6 +6,10 @@ class Message
 	def initialize type, msg
 		@type = type
 		@msg = msg  
+		if type == "identity"
+		puts "aa #{type} #{msg}"
+
+	end
 	end
 
 	def self.json_create(o)
