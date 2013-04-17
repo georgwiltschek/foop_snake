@@ -56,10 +56,12 @@ class Client
   end
   
   # send the direction to the server
-  def send_direction(direction)
-    package =JSON.dump( {"direction"  => direction})
-    @log.info package
-    @socket.puts(package)
+  def send_direction(direction)    
+    msg = Message.new("update_direction", direction)
+    puts JSON.dump(msg)
+    @socket.puts(JSON.dump(msg))
+
+
   end
   
   # gets game state update from server
