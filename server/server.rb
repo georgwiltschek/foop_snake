@@ -151,7 +151,7 @@ class Server
       @log.info "."
       if slot.client.isBot == true then
         slot.client.isBot = false
-        slot.client.client = client
+        slot.client.set_client(client)
         # TODO send self (name or id or anything)
         return slot
       end

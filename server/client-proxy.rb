@@ -1,5 +1,6 @@
 require 'logger'
 require "./common/Message"
+require "./common/MessageQueue"
 
 class ClientProxy
   attr_accessor :client, :lastInput, :isBot
@@ -7,6 +8,11 @@ class ClientProxy
   def initialize
     @isBot = true # always start as bot
     @log   = Logger.new(STDOUT)
+    @mq    = MessageQueue.new(self)
+  end
+
+  def set_client client
+    @mq.receiver = @client = client
   end
 
   # listen for messages of the associated client  
@@ -15,12 +21,14 @@ class ClientProxy
     while true
       line = @client.gets.chop
       break if !line
-      
+
       msg = JSON.parse(line, :create_additions => true)
 
       case msg.type.to_sym
         when :update_direction
-        @lastInput = msg.msg.to_sym
+          @lastInput = msg.msg.to_sym
+        when :request_update
+          @mq.send_messages
       end
     end
   end
@@ -41,29 +49,26 @@ class ClientProxy
 
   # gets update from server, relays it to real clients if any
   def update update
+    return unless @client
+
     case update.type.to_sym
       when :update_snakes
         snakes = update.msg       
-        if @client
-          begin
-            stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
-            stoneColdKilledSnakes = JSON.dump(stonedSnakes)
-            msg = Message.new("update_snakes", stoneColdKilledSnakes)
-            @client.puts(JSON.dump(msg))
-          rescue Exception => myException
-            @log.info "Exception rescued: #{myException}"
-            @client = nil
-            @isBot = true
-          end   
-        end
+        begin
+          stonedSnakes = snakes.map { |s| {"name" => s.get_name, "tail" => s.get_tail.to_json} }
+          stoneColdKilledSnakes = JSON.dump(stonedSnakes)
+          msg = Message.new("update_snakes", stoneColdKilledSnakes)
+          @mq.add_message(JSON.dump(msg))
+          # @client.puts(JSON.dump(msg))
+        rescue Exception => myException
+          @log.info "Exception rescued: #{myException}"
+          @client = nil
+          @isBot = true
+        end   
       when :update_colors
-        if @client
-          @client.puts(JSON.dump(update))
-        end
+        @mq.add_message(JSON.dump(update))
       when :identity
-        if @client
-#          @client.puts(JSON.dump(update));
-        end
+        @mq.add_message(JSON.dump(update))
       end
   end
 end

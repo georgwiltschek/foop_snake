@@ -60,27 +60,34 @@ class Client
     msg = Message.new("update_direction", direction)
     puts JSON.dump(msg)
     @socket.puts(JSON.dump(msg))
-
-
   end
   
+  def request_updates
+    while @running
+      msg = Message.new("request_update", true)
+      @socket.puts(JSON.dump(msg))
+    end
+  end
+
   # gets game state update from server
-  def get_update
-    line = @socket.gets.chop
+  def get_updates
+    while @running
+      line = @socket.gets.chop
 
-    die "connection lost" if !line
+      die "connection lost" if !line
 
-    update = JSON.parse(line, :create_additions => true)
+      update = JSON.parse(line, :create_additions => true)
 
-    case update.type.to_sym
-      when :update_snakes
-        update.msg = JSON.parse(update.msg, :create_additions => true)
-        update_snakes update.msg
-      when :update_colors      
-        @renderer.update_colors update.msg
-      when :identity
-    puts line
-        #TODO it's me! do something!
+      case update.type.to_sym
+        when :update_snakes
+          update.msg = JSON.parse(update.msg, :create_additions => true)
+          update_snakes update.msg
+        when :update_colors      
+          @renderer.update_colors update.msg
+        when :identity
+      puts line
+          #TODO it's me! do something!
+      end
     end
   end
 
@@ -108,6 +115,9 @@ class Client
 
     die "can't connect to server" unless connect_to_server
 
+    Thread.start{request_updates}
+    Thread.start{get_updates}
+
     # main game loop
     while @running
       d = (Time.now - t) * 1000 # elapsed time since last tick
@@ -120,7 +130,7 @@ class Client
       end
 
       # tick
-      if (d > 10) then
+      if (d > 5) then
         t = Time.now
 
         # send direction if changed
@@ -130,7 +140,7 @@ class Client
         end
 
         # get updated gamestate from server
-        get_update
+
       end
 
       @renderer.draw(@snakes)
