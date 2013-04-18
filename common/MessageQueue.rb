@@ -35,7 +35,7 @@ class MessageQueue
 
 		# clean up
 		sent.each do | msg |
-			@messages.remove(msg)
+			@messages.delete(msg)
 		end
 	end
 
